@@ -152,4 +152,4 @@ Todos alteram estado (exceto lint/typecheck/test) → seguem o protocolo da seç
 - **Modelo:** unidade → vendedor → proposta ← cliente/produto; `venda` existe se e somente se `proposta.status = 'GANHA'` (1:0..1). `proposta.unidade_id` é um snapshot intencional (vendedor pode ser transferido). `meta_vendedor` é mensal (vendedor, ano, mes).
 - **Documentação de schema:** `docs/schema.md` descreve só as views (vai para o prompt); as tabelas base ficam no README ou em `docs/tabelas-base.md` (nunca vão ao LLM).
 - **Roadmap:** 1 fundação/dados → 2 grafo LangGraph + LangSmith → 3 Route Handlers + testes de integração → 4 evals/guardrails → 5 frontend (só depois de validar o backend).
-- **Repositório git:** ainda não existe; o commit do passo 1.0 sai junto com o do passo 1.1.
+- **Repositório git:** branch main, remoto origin no GitHub; um commit por passo do PRD.
