@@ -63,6 +63,8 @@ Os passos do PRD da etapa são executados **na ordem**, um de cada vez. Ao concl
 2. faça um commit com a mensagem indicada no PRD;
 3. **pare e apresente um resumo** (o que foi feito, resultado da verificação, decisões tomadas) e aguarde aprovação antes de seguir para o próximo passo.
 
+Ao iniciar uma sessão, leia `docs/progresso.md` para saber o passo atual e as pendências; ao concluir um passo, atualize-o no mesmo commit do passo.
+
 Não adiante tarefas de passos seguintes. Dentro de cada passo, toda ação que altere algo (criar/editar arquivo, rodar comando, instalar pacote, commit) segue o protocolo da seção 1.
 
 ## 3. Regras gerais
