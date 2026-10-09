@@ -13,5 +13,4 @@
 | 1.6 Documentação do schema e fechamento | ⬜ | |
 
 ## Pendências
-- Decidir se renomeia vitest.config.ts → .mts (aviso do Vite).
 - Criar .env.local antes do passo 1.2.
