@@ -1,0 +1,915 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "e83a04a1-4abb-464f-acd9-147759b4b85c",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "cliente": {
+      "name": "cliente",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "tipo_pessoa": {
+          "name": "tipo_pessoa",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "documento": {
+          "name": "documento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "telefone": {
+          "name": "telefone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cidade": {
+          "name": "cidade",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "uf": {
+          "name": "uf",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "data_nascimento": {
+          "name": "data_nascimento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "data_cadastro": {
+          "name": "data_cadastro",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "cliente_documento_unique": {
+          "name": "cliente_documento_unique",
+          "columns": [
+            "documento"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "cliente_tipo_pessoa_ck": {
+          "name": "cliente_tipo_pessoa_ck",
+          "value": "tipo_pessoa IN ('PF','PJ')"
+        },
+        "cliente_data_nascimento_ck": {
+          "name": "cliente_data_nascimento_ck",
+          "value": "tipo_pessoa = 'PF' OR data_nascimento IS NULL"
+        }
+      }
+    },
+    "meta_vendedor": {
+      "name": "meta_vendedor",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "vendedor_id": {
+          "name": "vendedor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ano": {
+          "name": "ano",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mes": {
+          "name": "mes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "meta_quantidade": {
+          "name": "meta_quantidade",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "meta_valor": {
+          "name": "meta_valor",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "meta_vendedor_vendedor_ano_mes_uq": {
+          "name": "meta_vendedor_vendedor_ano_mes_uq",
+          "columns": [
+            "vendedor_id",
+            "ano",
+            "mes"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "meta_vendedor_vendedor_id_vendedor_id_fk": {
+          "name": "meta_vendedor_vendedor_id_vendedor_id_fk",
+          "tableFrom": "meta_vendedor",
+          "tableTo": "vendedor",
+          "columnsFrom": [
+            "vendedor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "meta_vendedor_mes_ck": {
+          "name": "meta_vendedor_mes_ck",
+          "value": "mes BETWEEN 1 AND 12"
+        },
+        "meta_vendedor_meta_quantidade_ck": {
+          "name": "meta_vendedor_meta_quantidade_ck",
+          "value": "meta_quantidade > 0"
+        },
+        "meta_vendedor_meta_valor_ck": {
+          "name": "meta_vendedor_meta_valor_ck",
+          "value": "meta_valor > 0"
+        }
+      }
+    },
+    "produto": {
+      "name": "produto",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "marca": {
+          "name": "marca",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "modelo": {
+          "name": "modelo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "versao": {
+          "name": "versao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "descricao": {
+          "name": "descricao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tipo_veiculo": {
+          "name": "tipo_veiculo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "categoria": {
+          "name": "categoria",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "combustivel": {
+          "name": "combustivel",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ano_modelo": {
+          "name": "ano_modelo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "preco_tabela": {
+          "name": "preco_tabela",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ativo": {
+          "name": "ativo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "produto_marca_modelo_versao_ano_uq": {
+          "name": "produto_marca_modelo_versao_ano_uq",
+          "columns": [
+            "marca",
+            "modelo",
+            "versao",
+            "ano_modelo"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "produto_tipo_veiculo_ck": {
+          "name": "produto_tipo_veiculo_ck",
+          "value": "tipo_veiculo IN ('LEVE','MOTO','PESADO')"
+        },
+        "produto_categoria_ck": {
+          "name": "produto_categoria_ck",
+          "value": "(tipo_veiculo = 'LEVE' AND categoria IN ('HATCH','SEDAN','SUV','PICAPE','UTILITARIO'))\n       OR (tipo_veiculo = 'MOTO' AND categoria IN ('STREET','TRAIL','SCOOTER','ESPORTIVA','CUSTOM'))\n       OR (tipo_veiculo = 'PESADO' AND categoria IN ('CAMINHAO','ONIBUS'))"
+        },
+        "produto_combustivel_ck": {
+          "name": "produto_combustivel_ck",
+          "value": "combustivel IN ('FLEX','GASOLINA','DIESEL','HIBRIDO','ELETRICO')"
+        },
+        "produto_preco_tabela_ck": {
+          "name": "produto_preco_tabela_ck",
+          "value": "preco_tabela > 0"
+        },
+        "produto_ativo_ck": {
+          "name": "produto_ativo_ck",
+          "value": "ativo IN (0, 1)"
+        }
+      }
+    },
+    "proposta": {
+      "name": "proposta",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "unidade_id": {
+          "name": "unidade_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "vendedor_id": {
+          "name": "vendedor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cliente_id": {
+          "name": "cliente_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "produto_id": {
+          "name": "produto_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "data_proposta": {
+          "name": "data_proposta",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "valor_tabela": {
+          "name": "valor_tabela",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "valor_proposta": {
+          "name": "valor_proposta",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "forma_pagamento": {
+          "name": "forma_pagamento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "valor_entrada": {
+          "name": "valor_entrada",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "qtd_parcelas": {
+          "name": "qtd_parcelas",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "data_fechamento": {
+          "name": "data_fechamento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "motivo_perda": {
+          "name": "motivo_perda",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "observacao": {
+          "name": "observacao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "proposta_data_proposta_idx": {
+          "name": "proposta_data_proposta_idx",
+          "columns": [
+            "data_proposta"
+          ],
+          "isUnique": false
+        },
+        "proposta_status_idx": {
+          "name": "proposta_status_idx",
+          "columns": [
+            "status"
+          ],
+          "isUnique": false
+        },
+        "proposta_unidade_id_idx": {
+          "name": "proposta_unidade_id_idx",
+          "columns": [
+            "unidade_id"
+          ],
+          "isUnique": false
+        },
+        "proposta_vendedor_id_idx": {
+          "name": "proposta_vendedor_id_idx",
+          "columns": [
+            "vendedor_id"
+          ],
+          "isUnique": false
+        },
+        "proposta_produto_id_idx": {
+          "name": "proposta_produto_id_idx",
+          "columns": [
+            "produto_id"
+          ],
+          "isUnique": false
+        },
+        "proposta_cliente_id_idx": {
+          "name": "proposta_cliente_id_idx",
+          "columns": [
+            "cliente_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "proposta_unidade_id_unidade_id_fk": {
+          "name": "proposta_unidade_id_unidade_id_fk",
+          "tableFrom": "proposta",
+          "tableTo": "unidade",
+          "columnsFrom": [
+            "unidade_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "proposta_vendedor_id_vendedor_id_fk": {
+          "name": "proposta_vendedor_id_vendedor_id_fk",
+          "tableFrom": "proposta",
+          "tableTo": "vendedor",
+          "columnsFrom": [
+            "vendedor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "proposta_cliente_id_cliente_id_fk": {
+          "name": "proposta_cliente_id_cliente_id_fk",
+          "tableFrom": "proposta",
+          "tableTo": "cliente",
+          "columnsFrom": [
+            "cliente_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "proposta_produto_id_produto_id_fk": {
+          "name": "proposta_produto_id_produto_id_fk",
+          "tableFrom": "proposta",
+          "tableTo": "produto",
+          "columnsFrom": [
+            "produto_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "proposta_valor_proposta_ck": {
+          "name": "proposta_valor_proposta_ck",
+          "value": "valor_proposta > 0"
+        },
+        "proposta_forma_pagamento_ck": {
+          "name": "proposta_forma_pagamento_ck",
+          "value": "forma_pagamento IN ('A_VISTA','FINANCIAMENTO','CONSORCIO','LEASING')"
+        },
+        "proposta_valor_entrada_ck": {
+          "name": "proposta_valor_entrada_ck",
+          "value": "forma_pagamento <> 'FINANCIAMENTO' OR valor_entrada IS NOT NULL"
+        },
+        "proposta_qtd_parcelas_ck": {
+          "name": "proposta_qtd_parcelas_ck",
+          "value": "forma_pagamento = 'A_VISTA' OR qtd_parcelas IS NOT NULL"
+        },
+        "proposta_status_ck": {
+          "name": "proposta_status_ck",
+          "value": "status IN ('EM_NEGOCIACAO','GANHA','PERDIDA','CANCELADA')"
+        },
+        "proposta_data_fechamento_ck": {
+          "name": "proposta_data_fechamento_ck",
+          "value": "status = 'EM_NEGOCIACAO' OR data_fechamento IS NOT NULL"
+        },
+        "proposta_motivo_perda_ck": {
+          "name": "proposta_motivo_perda_ck",
+          "value": "motivo_perda IS NULL OR motivo_perda IN ('PRECO','CREDITO_NEGADO','DESISTENCIA','CONCORRENCIA','PRAZO_ENTREGA')"
+        },
+        "proposta_motivo_perda_obrigatorio_ck": {
+          "name": "proposta_motivo_perda_obrigatorio_ck",
+          "value": "status <> 'PERDIDA' OR motivo_perda IS NOT NULL"
+        }
+      }
+    },
+    "unidade": {
+      "name": "unidade",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cnpj": {
+          "name": "cnpj",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "logradouro": {
+          "name": "logradouro",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "numero": {
+          "name": "numero",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "bairro": {
+          "name": "bairro",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cidade": {
+          "name": "cidade",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "uf": {
+          "name": "uf",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "regiao": {
+          "name": "regiao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cep": {
+          "name": "cep",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "telefone": {
+          "name": "telefone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "data_inauguracao": {
+          "name": "data_inauguracao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ativo": {
+          "name": "ativo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        }
+      },
+      "indexes": {
+        "unidade_nome_unique": {
+          "name": "unidade_nome_unique",
+          "columns": [
+            "nome"
+          ],
+          "isUnique": true
+        },
+        "unidade_cnpj_unique": {
+          "name": "unidade_cnpj_unique",
+          "columns": [
+            "cnpj"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "unidade_uf_ck": {
+          "name": "unidade_uf_ck",
+          "value": "length(uf) = 2"
+        },
+        "unidade_regiao_ck": {
+          "name": "unidade_regiao_ck",
+          "value": "regiao IN ('NORTE','NORDESTE','CENTRO_OESTE','SUDESTE','SUL')"
+        },
+        "unidade_ativo_ck": {
+          "name": "unidade_ativo_ck",
+          "value": "ativo IN (0, 1)"
+        }
+      }
+    },
+    "venda": {
+      "name": "venda",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "proposta_id": {
+          "name": "proposta_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "data_venda": {
+          "name": "data_venda",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "valor_final": {
+          "name": "valor_final",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "numero_nota_fiscal": {
+          "name": "numero_nota_fiscal",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "data_entrega": {
+          "name": "data_entrega",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "venda_proposta_id_unique": {
+          "name": "venda_proposta_id_unique",
+          "columns": [
+            "proposta_id"
+          ],
+          "isUnique": true
+        },
+        "venda_numero_nota_fiscal_unique": {
+          "name": "venda_numero_nota_fiscal_unique",
+          "columns": [
+            "numero_nota_fiscal"
+          ],
+          "isUnique": true
+        },
+        "venda_data_venda_idx": {
+          "name": "venda_data_venda_idx",
+          "columns": [
+            "data_venda"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "venda_proposta_id_proposta_id_fk": {
+          "name": "venda_proposta_id_proposta_id_fk",
+          "tableFrom": "venda",
+          "tableTo": "proposta",
+          "columnsFrom": [
+            "proposta_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "venda_valor_final_ck": {
+          "name": "venda_valor_final_ck",
+          "value": "valor_final > 0"
+        },
+        "venda_data_entrega_ck": {
+          "name": "venda_data_entrega_ck",
+          "value": "data_entrega IS NULL OR data_entrega >= data_venda"
+        }
+      }
+    },
+    "vendedor": {
+      "name": "vendedor",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "unidade_id": {
+          "name": "unidade_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cpf": {
+          "name": "cpf",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "telefone": {
+          "name": "telefone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "data_admissao": {
+          "name": "data_admissao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "data_desligamento": {
+          "name": "data_desligamento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "ativo": {
+          "name": "ativo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "vendedor_cpf_unique": {
+          "name": "vendedor_cpf_unique",
+          "columns": [
+            "cpf"
+          ],
+          "isUnique": true
+        },
+        "vendedor_email_unique": {
+          "name": "vendedor_email_unique",
+          "columns": [
+            "email"
+          ],
+          "isUnique": true
+        },
+        "vendedor_unidade_id_idx": {
+          "name": "vendedor_unidade_id_idx",
+          "columns": [
+            "unidade_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "vendedor_unidade_id_unidade_id_fk": {
+          "name": "vendedor_unidade_id_unidade_id_fk",
+          "tableFrom": "vendedor",
+          "tableTo": "unidade",
+          "columnsFrom": [
+            "unidade_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "vendedor_ativo_ck": {
+          "name": "vendedor_ativo_ck",
+          "value": "ativo IN (0, 1)"
+        }
+      }
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}
