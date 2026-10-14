@@ -66,6 +66,8 @@ Alternativas (sem instalação obrigatória):
 > mão, rode `npm run db:check`; para voltar ao estado original, `npm run db:reset`
 > (disponíveis a partir dos passos 1.4 e 1.5).
 
+Guia completo do Drizzle no projeto: [docs/drizzle.md](docs/drizzle.md).
+
 ## Decisões
 
 - **Projeto gerado numa pasta temporária:** o `create-next-app` não aceita pastas com arquivos
