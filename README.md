@@ -30,9 +30,10 @@ Preencha o `.env.local` (nunca versionado). Nesta etapa, só `DATABASE_PATH` é 
 | `npm test` | testes (vitest) |
 | `npm run db:generate` | gera migrations a partir de `src/lib/db/schema.ts` (pasta `drizzle/`) |
 | `npm run db:migrate` | aplica as migrations em `data/vendas.db` |
+| `npm run db:seed` | apaga e recarrega os dados sintéticos (determinístico, semente 42) |
 | `npm run db:studio` | abre o Drizzle Studio (ver abaixo) |
 
-Os scripts `db:seed`, `db:reset` e `db:check` entram nos próximos passos da Etapa 1.
+Os scripts `db:reset` e `db:check` entram nos próximos passos da Etapa 1.
 
 ## Interface do banco (queries manuais)
 
@@ -99,3 +100,17 @@ Alternativas (sem instalação obrigatória):
   `julianday`. `vw_desempenho_vendedor_mes` usa a unidade atual do vendedor.
 - **Migration das views:** criada com `drizzle-kit generate --custom` (`drizzle/0001_views.sql`),
   porque o Drizzle não gera views a partir do schema.
+- **Catálogo fixo:** 62 versões reais (37 leves, 15 motos, 10 pesados) com preços
+  aproximados de 2025, sem aleatoriedade. `preco_tabela` é o preço atual; `ano_modelo` = 2025
+  para todas. Renault Kwid Zen e Yamaha Factor 150 estão fora de linha (`ativo = 0`) e, no
+  passo 1.4, só recebem propostas no primeiro ano do período.
+- **Auxiliares do seed (`seed/documentos.ts`):** arquivo fora da lista do PRD, com CPF/CNPJ
+  válidos (dígitos verificadores) e únicos, datas em UTC (independentes do fuso), telefones e slugs.
+- **Dados de contato fictícios:** e-mails nos domínios `exemplo.com.br` e
+  `autorede.exemplo.com.br`, para não coincidir com endereços reais.
+- **Vendedores:** de 4 a 8 por unidade, ~15% admitidos no período, probabilidade de
+  desligamento de 10%, com mínimo de 3 ativos por unidade. Resultado: 9 desligados de 71
+  (12,7%), aceito como "~10%".
+- **Clientes:** cada cliente nasce de uma unidade sorteada (85% na mesma UF dela); ~60%
+  cadastrados antes do período e ~40% durante. No passo 1.4, cada proposta só usa clientes
+  já cadastrados na data dela. O segundo sobrenome de PF nunca repete o primeiro.
