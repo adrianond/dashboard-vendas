@@ -12,11 +12,31 @@
 | 1.5 Verificação de integridade e testes | ✅ concluído | 51a9077 |
 | 1.6 Documentação do schema e fechamento | ✅ concluído | 698802e |
 
-Etapa 1 concluída. Próxima: Etapa 2 (aguardando o PRD).
+Etapa 1 concluída. Critério 1 validado num clone limpo do GitHub: npm install + db:reset sem
+erros, 133 testes passando e dados idênticos aos da cópia local.
 
-Critério 1 validado num clone limpo do GitHub: npm install + db:reset sem erros, 133 testes
-passando e dados idênticos aos da cópia local.
+## Etapa 2 — Agente text-to-SQL (PRD-etapa-02-agente-text-to-sql.md)
 
-## Pendências
-- Para a Etapa 2: statement.readonly é true para ATTACH e PRAGMA query_only = OFF é aceito
-  por SQL; o validador (parser, camada 3) precisa recusar ATTACH e PRAGMA.
+| Passo | Status | Commit |
+|---|---|---|
+| 2.0 Dependências e configuração | ✅ concluído | |
+| 2.1 Validador de SQL | ⏳ próximo | |
+| 2.2 Executor seguro | ⬜ | |
+| 2.3 Estado, modelos e prompts | ⬜ | |
+| 2.4 Nós e montagem do grafo | ⬜ | |
+| 2.5 Observabilidade, Studio e CLI | ⬜ | |
+| 2.6 Testes com LLM real e documentação | ⬜ | |
+
+## Pendências e observações
+- Preencher o hash do commit do passo 2.0 (junto com o commit do passo 2.1).
+- statement.readonly é true para ATTACH e PRAGMA query_only = OFF é aceito por SQL: coberta
+  pelas regras 4 e 9 da seção 8 do PRD 2; conferir no passo 2.1.
+- Passo 2.2: o worker do executor deve abrir a conexão pelo readonly-client.ts (a regra de
+  lint proíbe importar better-sqlite3 em src/lib/agent).
+- Passo 2.3: confirmar no @langchain/anthropic instalado como passar thinking/effort e qual
+  método do withStructuredOutput usa JSON schema.
+- src/lib/agent usa imports relativos (o empacotador do `langgraph dev` pode não resolver o alias `@/`).
+- faixa_etaria nas views usa date('now'), não DATA_REFERENCIA: respostas sobre faixa etária
+  mudam com o tempo (reportado; views fora do escopo da Etapa 2).
+- Etapa 3: import 'server-only' nos indicadores pode falhar fora do Next.js (vitest, tsx);
+  tratar no passo 3.0.

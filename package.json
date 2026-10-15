@@ -20,6 +20,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@langchain/anthropic": "^1.5.12",
     "@langchain/core": "^1.2.17",
     "@langchain/langgraph": "^1.4.21",
     "better-sqlite3": "^13.0.3",
@@ -27,12 +28,14 @@
     "drizzle-orm": "^0.45.4",
     "langsmith": "^0.10.10",
     "next": "16.4.0",
+    "node-sql-parser": "^5.4.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
     "@faker-js/faker": "^10.6.0",
+    "@langchain/langgraph-cli": "^1.5.3",
     "@tailwindcss/turbopack": "^4",
     "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^24.19.1",

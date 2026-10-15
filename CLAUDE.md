@@ -19,7 +19,9 @@ Antes de **qualquer ação que altere algo**, o Claude Code para, apresenta o pl
 - qualquer comando que altere estado: `npm install`/`uninstall`, `npx`, `create-next-app`, migrations, seed, `db:reset`, build, scripts do projeto, comandos no banco;
 - qualquer comando `git` que altere o repositório (`init`, `add`, `commit`, `checkout`, `reset`, `stash`, `merge` etc.);
 - alterar configuração (`package.json`, `tsconfig.json`, `next.config.ts`, `drizzle.config.ts`, `.env*`, `.claude/`);
-- qualquer acesso à rede além de leitura de documentação.
+- qualquer acesso à rede além de leitura de documentação;
+- chamadas reais a LLM (têm custo): o anúncio informa o modelo e o número estimado de chamadas;
+- criação ou alteração de datasets e experimentos no LangSmith: o anúncio diz o que será criado ou sobrescrito.
 
 **Dispensam confirmação** (mas devem ser mencionadas brevemente): apenas leituras, como abrir e ler arquivos, listar pastas, buscar no código, `git status`, `git diff` e `git log`.
 
@@ -72,7 +74,7 @@ Não adiante tarefas de passos seguintes. Dentro de cada passo, toda ação que 
 - Siga o protocolo da seção 1 em toda a execução. Em especial, **nenhuma ação que altere arquivos, dependências, banco ou git é executada sem anúncio prévio e confirmação explícita do desenvolvedor**.
 - Trabalhe apenas no escopo da etapa em andamento e siga os passos do PRD em ordem. Não avance para etapas seguintes, mesmo que pareça natural.
 - Se alguma regra do PRD for ambígua ou conflitante, registre a decisão na seção "Decisões" do `README.md` e mencione-a no resumo do passo, em vez de inventar escopo novo.
-- Não altere os PRDs. Sugestões de mudança vão no resumo do passo.
+- O PRD da Etapa 1 (já executado) não é alterado. Os PRDs das Etapas 2 a 4 podem ser corrigidos quando divergirem do código real: anunciar a correção mostrando o trecho atual e o novo, aplicar só após confirmação e registrar na seção "Histórico de alterações" do PRD (data, seção, alteração e motivo). Correções que afrouxem regras de segurança nunca são feitas como ajuste de PRD: são reportadas para decisão do desenvolvedor.
 - Nunca relaxe uma regra de segurança (seção 4) para fazer algo funcionar. Se uma regra impedir o progresso, pare e reporte.
 
 ## 4. Segurança (defesa em camadas)
@@ -97,7 +99,7 @@ Regras inegociáveis:
 | 7 | Guardrails de saída (só números do resultado; erros brutos nunca vão ao usuário) | 2 |
 | 8 | API (rate limiting, tamanho do corpo, runtime Node.js, cabeçalhos de segurança) | 3 |
 | 9 | Observabilidade no LangSmith com metadados de guardrail | 2 |
-| 10 | Testes adversariais (validador) e dataset de red team (evals) | 2 / 4 |
+| 10 | Testes adversariais (validador) e dataset de red team (evals) | 2 / 3 |
 
 ## 5. Stack
 
@@ -153,5 +155,5 @@ Todos alteram estado (exceto lint/typecheck/test) → seguem o protocolo da seç
 - **Camada de views (`src/lib/db/views.ts`, criada por migration):** dimensões `vw_unidade`, `vw_vendedor`, `vw_cliente`, `vw_produto`; fatos `vw_proposta`, `vw_venda`, `vw_meta_vendedor`; analíticas `vw_venda_detalhada`, `vw_proposta_detalhada`, `vw_desempenho_vendedor_mes` (são a primeira escolha do LLM). Os testes `tests/db.views.test.ts` garantem completude (coluna exposta ou em `EXCLUDED_COLUMNS`), ausência de dados pessoais e uso de índices.
 - **Modelo:** unidade → vendedor → proposta ← cliente/produto; `venda` existe se e somente se `proposta.status = 'GANHA'` (1:0..1). `proposta.unidade_id` é um snapshot intencional (vendedor pode ser transferido). `meta_vendedor` é mensal (vendedor, ano, mes).
 - **Documentação de schema:** `docs/schema.md` descreve só as views (vai para o prompt); as tabelas base ficam no README ou em `docs/tabelas-base.md` (nunca vão ao LLM).
-- **Roadmap:** 1 fundação/dados → 2 grafo LangGraph + LangSmith → 3 Route Handlers + testes de integração → 4 evals/guardrails → 5 frontend (só depois de validar o backend).
+- **Roadmap (4 etapas):** 1 fundação/dados → 2 agente LangGraph text-to-SQL + guardrails + LangSmith + Studio → 3 API, indicadores, testes ponta a ponta e avaliações no LangSmith → 4 frontend (só depois do backend validado). Os PRDs ficam na raiz: `PRD-etapa-0N-*.md`.
 - **Repositório git:** branch main, remoto origin no GitHub; um commit por passo do PRD.

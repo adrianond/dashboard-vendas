@@ -17,7 +17,10 @@ npm install
 cp .env.example .env.local   # PowerShell: Copy-Item .env.example .env.local
 ```
 
-Preencha o `.env.local` (nunca versionado). Nesta etapa, só `DATABASE_PATH` é obrigatória.
+Preencha o `.env.local` (nunca versionado). Obrigatória: `DATABASE_PATH`. Para usar o agente com
+o modelo real (CLI, Studio e testes com LLM), preencha também `ANTHROPIC_API_KEY`; sem
+`LANGSMITH_API_KEY`, o agente funciona sem rastreamento. As demais variáveis têm padrão (seção 7.4
+do PRD da Etapa 2).
 
 ## Gerar e verificar o banco
 
@@ -189,3 +192,18 @@ Detalhes no `CLAUDE.md`, seção 4.
 - **Testes:** leem o banco real gerado pelo seed (provam o mesmo `client.ts` da aplicação e os
   dados gerados). A completude considera uma coluna coberta se ela aparece com o mesmo nome
   em `vw_<tabela>`. O teste trivial do passo 1.1 foi removido.
+- **PRDs na raiz:** os PRDs das Etapas 2 a 4 ficam na raiz junto do PRD da Etapa 1 (decisão do
+  desenvolvedor; o PRD da Etapa 2 previa copiá-los para `docs/prd/`). Ajustes nos PRDs ficam
+  registrados no "Histórico de alterações" de cada um.
+- **Modelos (Etapa 2):** IDs confirmados na documentação da Anthropic: `claude-haiku-5-5`
+  (classificação) e `claude-sonnet-5-5` (SQL e resposta). Esses modelos rejeitam `temperature`
+  diferente do padrão e o Sonnet 5.5 rejeita `tool_choice` forçado; o PRD da Etapa 2 foi ajustado
+  (seção 4.1).
+- **`@langchain/langgraph-cli` e `npm audit`:** a CLI traz `create-langgraph` → `extract-zip`
+  2.0.1, com 3 vulnerabilidades altas (path traversal ao extrair .zip malicioso), sem correção
+  disponível. Só o gerador de projetos (`langgraph new`) extrai .zip; o projeto usa apenas o
+  `langgraph dev`. Ferramenta de desenvolvimento, fora da aplicação. **Nunca rodar
+  `langgraph new`/`create-langgraph` neste projeto.** Rever com `npm update` quando houver correção.
+- **Configuração do agente:** `src/lib/env.ts` valida todas as variáveis (texto vazio conta como
+  ausente); `src/lib/agent/config.ts` organiza os limites da seção 7.4 e permite ajustes nos
+  testes (`criarConfig`). `ANTHROPIC_API_KEY` só é exigida ao criar um modelo real.
