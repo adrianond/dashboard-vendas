@@ -31,9 +31,13 @@ Preencha o `.env.local` (nunca versionado). Nesta etapa, só `DATABASE_PATH` é 
 | `npm run db:generate` | gera migrations a partir de `src/lib/db/schema.ts` (pasta `drizzle/`) |
 | `npm run db:migrate` | aplica as migrations em `data/vendas.db` |
 | `npm run db:seed` | apaga e recarrega os dados sintéticos (determinístico, semente 42) |
+| `npm run db:reset` | ⚠️ apaga `data/vendas.db`, aplica as migrations e roda o seed |
 | `npm run db:studio` | abre o Drizzle Studio (ver abaixo) |
 
-Os scripts `db:reset` e `db:check` entram nos próximos passos da Etapa 1.
+> Feche o Drizzle Studio e o `npm run dev` antes do `db:reset`: no Windows, um programa
+> com o banco aberto impede a exclusão do arquivo (erro EPERM/EBUSY).
+
+O script `db:check` entra no passo 1.5.
 
 ## Interface do banco (queries manuais)
 
@@ -116,3 +120,19 @@ Guia completo do Drizzle no projeto: [docs/drizzle.md](docs/drizzle.md).
 - **Clientes:** cada cliente nasce de uma unidade sorteada (85% na mesma UF dela); ~60%
   cadastrados antes do período e ~40% durante. No passo 1.4, cada proposta só usa clientes
   já cadastrados na data dela. O segundo sobrenome de PF nunca repete o primeiro.
+- **Perfil fixo por unidade (`seed/propostas.ts`):** peso de volume, conversão base e tipos
+  vendidos (8 unidades com motos, 6 com pesados). Cada vendedor tem volume (0,6–1,6) e
+  conversão própria (base da unidade ±0,08, limitada a 20–50%).
+- **Taxa de conversão:** GANHA / (GANHA + PERDIDA + CANCELADA). Resultado: 34,4% no geral, de
+  23,9% a 39,7% por unidade.
+- **Regras de proposta além do texto do PRD:** cliente precisa estar cadastrado na data; o
+  fechamento não passa do desligamento do vendedor; perdas por PRECO têm desconto de 0–4%;
+  CREDITO_NEGADO nunca em pagamento à vista; entrada só em financiamento (10–50%); produtos
+  fora de linha só no primeiro ano; observações genéricas, sem dados pessoais, em ~20% das propostas.
+- **IDs das propostas:** o RETURNING do SQLite não garante ordem; como a sequência é zerada e
+  tudo roda numa transação, os IDs são 1..N na ordem de inserção (o seed confere e falha se não for).
+- **NF:** formato `NF-UU-NNNNNN`, sequencial por unidade na ordem das datas de venda.
+- **Metas:** calculadas depois das vendas, a partir da média mensal de cada vendedor (quantidade
+  e valor independentes), com sazonalidade e variação aleatória. Mediana de quem bate a meta:
+  56,7% (quantidade) e ~41% (valor). O primeiro e o último mês ficam abaixo da faixa
+  (sem vendas anteriores / propostas ainda em negociação).
