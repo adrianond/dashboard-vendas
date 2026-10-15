@@ -32,12 +32,14 @@ Preencha o `.env.local` (nunca versionado). Nesta etapa, só `DATABASE_PATH` é 
 | `npm run db:migrate` | aplica as migrations em `data/vendas.db` |
 | `npm run db:seed` | apaga e recarrega os dados sintéticos (determinístico, semente 42) |
 | `npm run db:reset` | ⚠️ apaga `data/vendas.db`, aplica as migrations e roda o seed |
+| `npm run db:check` | verifica as regras de integridade (sai com código ≠ 0 se houver violação) |
 | `npm run db:studio` | abre o Drizzle Studio (ver abaixo) |
 
 > Feche o Drizzle Studio e o `npm run dev` antes do `db:reset`: no Windows, um programa
 > com o banco aberto impede a exclusão do arquivo (erro EPERM/EBUSY).
 
-O script `db:check` entra no passo 1.5.
+Os testes (`npm test`) leem o banco real em `data/vendas.db`. Num clone novo, ou depois de
+editar dados à mão, rode `npm run db:reset` antes.
 
 ## Interface do banco (queries manuais)
 
@@ -136,3 +138,18 @@ Guia completo do Drizzle no projeto: [docs/drizzle.md](docs/drizzle.md).
   e valor independentes), com sazonalidade e variação aleatória. Mediana de quem bate a meta:
   56,7% (quantidade) e ~41% (valor). O primeiro e o último mês ficam abaixo da faixa
   (sem vendas anteriores / propostas ainda em negociação).
+- **`db:check` com a conexão somente leitura:** a verificação só lê o banco, então usa o
+  `readonly-client.ts` (menor privilégio).
+- **ATTACH na conexão somente leitura (critério 9):** o ATTACH de arquivo falha, mas o
+  better-sqlite3 não permite bloquear `ATTACH ':memory:'`. O banco anexado fica inerte
+  (CREATE e tabelas TEMP falham) e o teste prova isso; o bloqueio total do ATTACH fica com o
+  validador de SQL da Etapa 2 (camada 3). Decisão do desenvolvedor (opção a).
+- **Achados para a Etapa 2:** `statement.readonly` é `true` para ATTACH (não serve para
+  barrá-lo), e `PRAGMA query_only = OFF` é aceito por SQL. A escrita continua bloqueada pela
+  abertura `readonly` do arquivo, mas o validador precisa recusar PRAGMA e ATTACH pelo parser.
+- **Regra de lint para `src/lib/agent`:** bloqueia imports de `db/client`, do seed e do
+  `better-sqlite3`/`drizzle-orm/better-sqlite3` (só `import type` é permitido), para o agente
+  não abrir conexões próprias. Escolhida em vez de teste porque o erro aparece no editor.
+- **Testes:** leem o banco real gerado pelo seed (provam o mesmo `client.ts` da aplicação e os
+  dados gerados). A completude considera uma coluna coberta se ela aparece com o mesmo nome
+  em `vw_<tabela>`. O teste trivial do passo 1.1 foi removido.
