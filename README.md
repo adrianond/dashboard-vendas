@@ -117,6 +117,10 @@ Detalhes no `CLAUDE.md`, seção 4.
   só do lint (`eslint-config-next`). O `npm audit fix --force` rebaixaria o
   `eslint-config-next` para a 14.x, incompatível com o Next 16. Risco desprezível (ferramenta de
   desenvolvimento, sem entrada externa); resolver com `npm update` quando houver correção.
+  As 4 moderadas vêm de um `esbuild` antigo (≤ 0.24.2) embutido pelo `drizzle-kit`
+  (`@esbuild-kit`); a falha afeta só o servidor de desenvolvimento do esbuild, que o
+  `drizzle-kit` não usa. Ferramenta de desenvolvimento, fora da aplicação: risco desprezível;
+  resolver com `npm update` quando o `drizzle-kit` atualizar a dependência.
 - **Scripts de instalação não aprovados:** o `better-sqlite3` 13 já traz binários
   pré-compilados (`prebuilds/`); o script pendente (`node-gyp rebuild`) só compilaria do zero.
   `esbuild` e `unrs-resolver` funcionam sem os `postinstall`. Validado carregando o SQLite

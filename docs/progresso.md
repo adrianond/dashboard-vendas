@@ -10,12 +10,13 @@
 | 1.3 Seed das entidades de cadastro | ✅ concluído | 3a8843b |
 | 1.4 Seed de propostas, vendas e metas | ✅ concluído | af9e3a5 |
 | 1.5 Verificação de integridade e testes | ✅ concluído | 51a9077 |
-| 1.6 Documentação do schema e fechamento | ✅ concluído | |
+| 1.6 Documentação do schema e fechamento | ✅ concluído | 698802e |
 
 Etapa 1 concluída. Próxima: Etapa 2 (aguardando o PRD).
 
+Critério 1 validado num clone limpo do GitHub: npm install + db:reset sem erros, 133 testes
+passando e dados idênticos aos da cópia local.
+
 ## Pendências
-- Preencher o hash do commit do passo 1.6 na tabela acima (no primeiro commit da Etapa 2).
-- Confirmar o critério 1 (clone limpo do GitHub) — anúncio F.
 - Para a Etapa 2: statement.readonly é true para ATTACH e PRAGMA query_only = OFF é aceito
   por SQL; o validador (parser, camada 3) precisa recusar ATTACH e PRAGMA.
