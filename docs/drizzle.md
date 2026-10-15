@@ -151,7 +151,6 @@ alternativas offline estão no README, em "Interface do banco".
   migration versionada; o histórico em `drizzle/` deixaria de representar o banco.
 - **Não edite `drizzle/meta/` à mão.** Os snapshots são a base de comparação do `db:generate`.
 - **O Studio usa a conexão com escrita.** Alterações manuais podem violar regras de integridade;
-  depois de editar dados, rode `npm run db:check` (a partir do passo 1.5) ou recrie tudo com
-  `npm run db:reset` (a partir do passo 1.4).
+  depois de editar dados, rode `npm run db:check` ou recrie tudo com `npm run db:reset`.
 - **Views e segurança:** toda view lê direto das tabelas base (nunca de outra view), lista as
   colunas explicitamente (sem `SELECT *`) e não tem triggers.

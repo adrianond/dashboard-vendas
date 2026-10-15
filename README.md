@@ -19,6 +19,17 @@ cp .env.example .env.local   # PowerShell: Copy-Item .env.example .env.local
 
 Preencha o `.env.local` (nunca versionado). Nesta etapa, só `DATABASE_PATH` é obrigatória.
 
+## Gerar e verificar o banco
+
+```bash
+npm run db:reset   # cria data/vendas.db, aplica as migrations e carrega os dados sintéticos
+npm run db:check   # confere as regras de integridade (deve terminar com "Nenhuma violação.")
+npm test           # testes de integração, integridade, segurança e documentação
+npm run dev        # sobe a aplicação em http://localhost:3000
+```
+
+O seed é determinístico: rodar o `db:reset` de novo gera exatamente os mesmos dados.
+
 ## Scripts
 
 | Script | Ação |
@@ -69,10 +80,31 @@ Alternativas (sem instalação obrigatória):
 - `sqlite3 data/vendas.db` no terminal.
 
 > ⚠️ Alterações manuais nos dados podem violar as regras de integridade. Depois de editar à
-> mão, rode `npm run db:check`; para voltar ao estado original, `npm run db:reset`
-> (disponíveis a partir dos passos 1.4 e 1.5).
+> mão, rode `npm run db:check`; para voltar ao estado original, `npm run db:reset`.
 
 Guia completo do Drizzle no projeto: [docs/drizzle.md](docs/drizzle.md).
+
+## Documentação
+
+- [docs/schema.md](docs/schema.md) — views disponíveis para consultas (é o contexto do LLM)
+- [docs/tabelas-base.md](docs/tabelas-base.md) — tabelas base (só para desenvolvedores; nunca vai ao LLM)
+- [docs/drizzle.md](docs/drizzle.md) — como o Drizzle é usado no projeto
+- [docs/progresso.md](docs/progresso.md) — andamento das etapas e pendências
+
+## Segurança
+
+O agente (a partir da Etapa 2) **só lê** o banco:
+
+- **Camada 1 — conexão:** `src/lib/db/readonly-client.ts` abre o arquivo em modo somente leitura
+  e com `PRAGMA query_only = ON`; uma regra de lint impede `src/lib/agent` de importar a conexão
+  de escrita ou abrir conexões próprias. `tests/db.readonly.test.ts` prova que escrita, alteração
+  de estrutura e `PRAGMA`s de escrita falham e que o banco continua idêntico.
+- **Camada 2 — dados:** o LLM só conhece as views `vw_*`, sem dados pessoais nem texto livre.
+  `tests/db.views.test.ts` prova a ausência das colunas sensíveis, a completude, a consistência
+  com as tabelas base e o uso de índices.
+
+As demais camadas (validação do SQL, limites, guardrails etc.) entram nas próximas etapas.
+Detalhes no `CLAUDE.md`, seção 4.
 
 ## Decisões
 
