@@ -207,3 +207,10 @@ Detalhes no `CLAUDE.md`, seção 4.
 - **Configuração do agente:** `src/lib/env.ts` valida todas as variáveis (texto vazio conta como
   ausente); `src/lib/agent/config.ts` organiza os limites da seção 7.4 e permite ajustes nos
   testes (`criarConfig`). `ANTHROPIC_API_KEY` só é exigida ao criar um modelo real.
+- **Validador de SQL (passo 2.1):** as tabelas são resolvidas pela AST respeitando o escopo de
+  cada `WITH`; o `tableList` do parser (sem escopo) é conferido como segunda trava. CTE que cita o
+  próprio nome é tratada como recursiva mesmo sem `RECURSIVE` (o SQLite a trata assim). Nomes
+  qualificados com schema (`main.`, `temp.`) são recusados. Comandos que o parser não entende
+  (`PRAGMA`, `VACUUM`, `BEGIN`, `DETACH`...) reprovam pela regra 2 (falha fechada). Funções de
+  janela exigem `PARTITION BY` (limitação do parser; ver Histórico do PRD 2). O `prepare` da
+  regra 9 é injetável para teste.
