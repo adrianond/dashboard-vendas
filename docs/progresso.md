@@ -34,8 +34,21 @@ erros, 133 testes passando e dados idênticos aos da cópia local.
   script "test" do package.json passa a usar a flag.
 - Passo 2.3: o prompt de geração de SQL deve orientar `PARTITION BY 1` nas funções de janela
   (o parser não aceita `OVER ()` nem `OVER (ORDER BY ...)`).
-- Passo 2.3: confirmar no @langchain/anthropic instalado como passar thinking/effort e qual
-  método do withStructuredOutput usa JSON schema.
+- Passo 2.3 — pesquisa feita (@langchain/anthropic 1.5.12, SDK 0.122, referência da API):
+  - Sonnet 5.5: thinking {type:"disabled"} dá 400; desligar com {type:"between_tools"}
+    (sem outros campos, só com effort ≤ high). O tipo do SDK não conhece o valor: usar cast;
+    o LangChain envia o thinking sem alterar quando ele é definido explicitamente.
+  - Haiku 5.5: {type:"disabled"} aceito com effort ≤ high; effort padrão medium.
+  - Nenhum dos dois aceita temperature diferente do padrão; Sonnet 5.5 rejeita tool_choice forçado.
+  - effort: outputConfig: { effort } no construtor do ChatAnthropic.
+  - Saída estruturada: withStructuredOutput(schema, { method: "jsonSchema" }) → output_config.format
+    json_schema, sem tool_choice; o effort do construtor é mesclado (não se perde).
+  - Plano anunciado e ainda não aprovado: interface ModelosAgente (classificar/escreverSql/responder)
+    para injetar modelos falsos; classificação Haiku disabled + low; SQL Sonnet between_tools +
+    medium; resposta Sonnet between_tools + low; prompts/delimitar.ts para neutralizar tags;
+    tests/agent.prompts.test.ts.
+  - Decisão pendente: ligar ou não fallbacks: "default" (beta) para recusas no Sonnet 5.5
+    (recomendação: não ligar agora; reavaliar no 2.6).
 - src/lib/agent usa imports relativos (o empacotador do `langgraph dev` pode não resolver o alias `@/`).
 - faixa_etaria nas views usa date('now'), não DATA_REFERENCIA: respostas sobre faixa etária
   mudam com o tempo (reportado; views fora do escopo da Etapa 2).
