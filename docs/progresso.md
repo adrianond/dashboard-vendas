@@ -20,22 +20,20 @@ erros, 133 testes passando e dados idênticos aos da cópia local.
 | Passo | Status | Commit |
 |---|---|---|
 | 2.0 Dependências e configuração | ✅ concluído | b37c12f |
-| 2.1 Validador de SQL | ✅ concluído | |
-| 2.2 Executor seguro | ⏳ próximo | |
-| 2.3 Estado, modelos e prompts | ⬜ | |
+| 2.1 Validador de SQL | ✅ concluído | 44662ae |
+| 2.2 Executor seguro | ✅ concluído | |
+| 2.3 Estado, modelos e prompts | ⏳ próximo | |
 | 2.4 Nós e montagem do grafo | ⬜ | |
 | 2.5 Observabilidade, Studio e CLI | ⬜ | |
 | 2.6 Testes com LLM real e documentação | ⬜ | |
 
 ## Pendências e observações
-- Preencher o hash do commit do passo 2.1 (junto com o commit do passo 2.2).
+- Preencher o hash do commit do passo 2.2 (junto com o commit do passo 2.3).
 - vitest: o processo cai com segfault ao empacotar o vitest.config.mts (rolldown no Windows),
   dentro e fora do sandbox. Contorno: `npx vitest run --configLoader runner`. Decidir se o
   script "test" do package.json passa a usar a flag.
 - Passo 2.3: o prompt de geração de SQL deve orientar `PARTITION BY 1` nas funções de janela
   (o parser não aceita `OVER ()` nem `OVER (ORDER BY ...)`).
-- Passo 2.2: o worker do executor deve abrir a conexão pelo readonly-client.ts (a regra de
-  lint proíbe importar better-sqlite3 em src/lib/agent).
 - Passo 2.3: confirmar no @langchain/anthropic instalado como passar thinking/effort e qual
   método do withStructuredOutput usa JSON schema.
 - src/lib/agent usa imports relativos (o empacotador do `langgraph dev` pode não resolver o alias `@/`).
@@ -43,3 +41,5 @@ erros, 133 testes passando e dados idênticos aos da cópia local.
   mudam com o tempo (reportado; views fora do escopo da Etapa 2).
 - Etapa 3: import 'server-only' nos indicadores pode falhar fora do Next.js (vitest, tsx);
   tratar no passo 3.0.
+- Etapa 3: empacotar o processo filho do executor (fork de um .ts com --import tsx; ver o ponto
+  de atenção no README).

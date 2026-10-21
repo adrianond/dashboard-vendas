@@ -116,7 +116,7 @@ Entregar:
 │   ├── sql/
 │   │   ├── validator.ts            # validação determinística (seção 8)
 │   │   ├── executor.ts             # execução segura (seção 9)
-│   │   └── executor-worker.ts      # worker thread que roda a query
+│   │   └── executor-worker.ts      # processo filho que roda a query
 │   └── graph.ts                    # montagem do grafo e arestas condicionais
 └── tests/
     ├── agent.validator.test.ts     # casos válidos e adversariais
@@ -285,10 +285,10 @@ O motivo de reprovação deve ser técnico e útil para a correção (ex.: "tabe
 `executarSql(sql)` usa **somente** a conexão de `readonly-client.ts`.
 
 - **Limite de linhas:** envolver a query aprovada como `SELECT * FROM (<sql>) LIMIT <AGENT_MAX_LINHAS + 1>`. Se vierem mais linhas que o máximo, descartar a excedente e marcar `truncado = true`. O SQL com o `LIMIT` aplicado é o `sqlExecutado`.
-- **Timeout:** como o `better-sqlite3` é síncrono, a query roda numa **worker thread** com sua própria conexão somente leitura. Se o tempo estourar, a thread é encerrada (`worker.terminate()`) e o resultado é um erro de timeout, enviado ao nó de correção ("query muito cara, simplifique").
+- **Timeout:** como o `better-sqlite3` é síncrono, a query roda num **processo filho** (`child_process.fork`) com sua própria conexão somente leitura. Se o tempo estourar, o processo é encerrado com `kill()` e o resultado é um erro de timeout, enviado ao nó de correção ("query muito cara, simplifique"). O `better-sqlite3` não tem como interromper uma query em andamento; `worker.terminate()` não encerra uma thread presa no código nativo do SQLite, e só o encerramento do processo garante a interrupção.
 - **Tamanho:** valores de texto longos são truncados e o resultado serializado enviado ao LLM respeita `AGENT_MAX_RESULTADO_CHARS` e `AGENT_MAX_LINHAS_RESPOSTA`. O estado mantém as linhas completas (até `AGENT_MAX_LINHAS`) para uso futuro da API.
 - **Tipos:** converter `BigInt` em número ou string antes de devolver.
-- O executor expõe uma interface (`SqlExecutor`) para poder ser substituído em testes e, se necessário, na Etapa 3. **Risco conhecido:** worker threads dentro do Next.js podem exigir ajuste de caminho do arquivo do worker no build; registrar no README como ponto de atenção para a Etapa 3, sem resolver agora.
+- O executor expõe uma interface (`SqlExecutor`) para poder ser substituído em testes e, se necessário, na Etapa 3. **Risco conhecido:** o processo filho dentro do Next.js exige ajuste no build (caminho do arquivo do worker e carregamento do TypeScript, hoje via `tsx`); registrar no README como ponto de atenção para a Etapa 3, sem resolver agora.
 
 ## 10. Observabilidade: LangSmith e Studio (camada 9)
 
@@ -372,7 +372,7 @@ RUN_LLM_TESTS=0
 6. `npm run agent:dev` sobe o servidor, o grafo `agente_vendas` aparece no Studio e uma execução mostra todos os nós percorridos.
 7. Os traces aparecem no projeto `dashboard-vendas` do LangSmith com os metadados e tags da seção 10.1, incluindo pelo menos um trace com `guardrail-bloqueio`.
 8. Nenhum teste ou execução altera o banco: `npm run db:check` continua sem violações e as contagens são idênticas às do fim da Etapa 1.
-9. O README documenta: variáveis novas, como rodar o CLI, como abrir o Studio, como rodar os testes com LLM real (e o aviso de custo) e o ponto de atenção do worker thread para a Etapa 3.
+9. O README documenta: variáveis novas, como rodar o CLI, como abrir o Studio, como rodar os testes com LLM real (e o aviso de custo) e o ponto de atenção do processo filho do executor para a Etapa 3.
 
 ## 14. Plano de execução (passos)
 
@@ -485,3 +485,4 @@ Execute os passos **na ordem**. Dentro de cada passo, toda ação segue o protoc
 | 2026-10-15 | 4.1 | Remove `temperature: 0`; orienta sobre thinking/maxTokens e saída estruturada | IDs confirmados (claude-haiku-5-5, claude-sonnet-5-5); esses modelos rejeitam amostragem não padrão e `tool_choice` forçado (Sonnet), e o thinking ligado por padrão consome maxTokens |
 | 2026-10-21 | 8 (regra 7) | Funções de janela exigem `OVER (PARTITION BY ...)`; o motivo orienta `PARTITION BY 1` | O `node-sql-parser` 5.4.0 (dialeto sqlite) não entende `OVER ()` nem `OVER (ORDER BY ...)`; mantida a falha fechada (decisão do desenvolvedor) |
 | 2026-10-21 | 12 | Instrução dentro de comentário é aprovada (comentário removido); segunda instrução após comentário reprova | Comentário não é executado; o `sqlNormalizado` vem da AST, sem comentários (decisão do desenvolvedor) |
+| 2026-10-21 | 5, 9 e 13 | Executor roda a query num processo filho encerrado com `kill()` no timeout, em vez de worker thread | Sonda no passo 2.2: com uma query cara, `worker.terminate()` não interrompeu a thread presa no SQLite (o processo não terminava); o `better-sqlite3` não tem interrupção. O processo filho foi encerrado no tempo exato. Reforça a camada 4 |

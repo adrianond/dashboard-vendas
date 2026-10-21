@@ -214,3 +214,13 @@ Detalhes no `CLAUDE.md`, seção 4.
   (`PRAGMA`, `VACUUM`, `BEGIN`, `DETACH`...) reprovam pela regra 2 (falha fechada). Funções de
   janela exigem `PARTITION BY` (limitação do parser; ver Histórico do PRD 2). O `prepare` da
   regra 9 é injetável para teste.
+- **Executor em processo filho (passo 2.2):** o PRD previa worker thread, mas a sonda mostrou que
+  `worker.terminate()` não interrompe uma thread presa numa query cara do SQLite (o processo não
+  terminava), e o `better-sqlite3` não tem interrupção. A query roda num processo filho
+  (`src/lib/agent/sql/executor-worker.ts`, via `child_process.fork`) que é morto com `kill()` no
+  timeout. O timeout conta a partir do aviso "pronto" do filho (a subida, ~300 ms, tem limite
+  próprio de 15 s). Inteiros vêm com `safeIntegers` e viram número quando cabem sem perda, senão texto.
+- **⚠️ Ponto de atenção para a Etapa 3 (executor):** o executor faz `fork` de um arquivo `.ts`
+  com `--import tsx`. No build do Next.js esse arquivo não fica no bundle, e o `tsx` é dependência
+  de desenvolvimento: será preciso empacotar/compilar o worker (ou outra estratégia de processo)
+  e conferir o caminho do arquivo em produção.

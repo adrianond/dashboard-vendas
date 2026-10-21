@@ -93,7 +93,7 @@ Regras inegociáveis:
 | 1 | Banco: conexão somente leitura exclusiva do agente | 1 |
 | 2 | Dados: apenas views `vw_*`, sem dados pessoais | 1 |
 | 3 | Validação do SQL com parser (1 instrução `SELECT`, só `ALLOWED_VIEWS`, sem `PRAGMA`/`ATTACH`/`sqlite_master`, `statement.readonly`) | 2 |
-| 4 | Limites de execução (`LIMIT` ≤ 500, timeout em worker thread, máx. 3 correções, limite de tokens) | 2 |
+| 4 | Limites de execução (`LIMIT` ≤ 500, timeout em processo filho encerrado com kill, máx. 3 correções, limite de tokens) | 2 |
 | 5 | Guardrails de entrada (tamanho máximo, classificador de escopo/manipulação antes de gerar SQL) | 2 |
 | 6 | Prompt (regras explícitas; pergunta e resultados delimitados como dados) | 2 |
 | 7 | Guardrails de saída (só números do resultado; erros brutos nunca vão ao usuário) | 2 |
