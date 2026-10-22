@@ -11,6 +11,8 @@ export type Status = "OK" | "RECUSADO" | "FALHA";
 // As linhas de resultado de trocas anteriores nunca entram no histórico (seção 6.4).
 export type Troca = { pergunta: string; resposta: string; sql?: string };
 export type RegistroGuardrail = { etapa: string; aprovado: boolean; motivo: string };
+// Uma lista acrescenta registros; { reiniciarCom } descarta os do turno anterior (início de cada pergunta).
+export type AtualizacaoGuardrails = RegistroGuardrail[] | { reiniciarCom: RegistroGuardrail[] };
 
 // Campo que guarda só o último valor escrito.
 function ultimo<T>(padrao: () => T) {
@@ -31,9 +33,9 @@ export const EstadoGrafo = Annotation.Root({
   truncado: ultimo<boolean>(() => false),
   resposta: ultimo<string>(() => ""),
   status: ultimo<Status | null>(() => null),
-  // Cada nó acrescenta os guardrails que aplicou; nada é sobrescrito.
-  guardrails: Annotation<RegistroGuardrail[]>({
-    reducer: (anteriores, novos) => anteriores.concat(novos),
+  // Cada nó acrescenta os guardrails que aplicou; só o validarEntrada reinicia a lista.
+  guardrails: Annotation<RegistroGuardrail[], AtualizacaoGuardrails>({
+    reducer: (anteriores, novos) => (Array.isArray(novos) ? anteriores.concat(novos) : novos.reiniciarCom),
     default: () => [],
   }),
 });

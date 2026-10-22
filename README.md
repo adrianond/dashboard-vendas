@@ -229,6 +229,22 @@ Detalhes no `CLAUDE.md`, seção 4.
   não lista. A neutralização de tags vale para aberturas e fechamentos de **todas** as tags dos
   prompts (inclusive com espaços e maiúsculas), não só para o fechamento da tag correspondente.
   O prompt de SQL orienta `PARTITION BY 1` nas funções de janela (limitação do validador).
+- **Grafo (passo 2.4):** cada nó é criado por uma fábrica que recebe `{ modelos, executor, config }`
+  (`createAgent` injeta tudo; padrões: executor real e `MemorySaver`; `checkpointer: false` para o
+  Studio). Decisões onde o PRD não define:
+  - exceção de um modelo (erro da API, recusa, JSON inválido) é capturada no nó e vira
+    `responderFalha`; o detalhe técnico vai só para `guardrails`, e nenhuma exceção escapa do grafo;
+  - só trocas com status `OK` entram no `historico`; recusas e falhas não viram contexto das
+    próximas perguntas. O SQL guardado é o `sqlNormalizado` (sem o `LIMIT` do executor);
+  - `RECUSADO` e `FALHA` devolvem resultado sem linhas, sem colunas e com `sqlExecutado = null`;
+  - reprovação no guardrail de saída (seção 7.3, `src/lib/agent/saida.ts`) conta como `FALHA`;
+  - o `validarEntrada` zera os campos do turno (com o checkpointer, o thread manteria os da
+    pergunta anterior), e `guardrails` é reiniciado com `{ reiniciarCom: [...] }`;
+  - `saida.ts` tem a lista fixa das 7 tabelas base (o agente não importa o schema das tabelas),
+    e um teste confere que ela acompanha `src/lib/db/schema.ts`. Também barra qualquer `vw_*`,
+    não só `FROM vw_`;
+  - o `graph` padrão para o Studio (modelos reais) fica para o passo 2.5, para não exigir a
+    `ANTHROPIC_API_KEY` ao importar `src/lib/agent`.
 - **`npm test` com `--configLoader runner`:** no Windows, o vitest cai com segfault ao
   empacotar o `vitest.config.mts` (rolldown), dentro e fora do sandbox. Com o loader `runner`, a
   configuração é carregada sem empacotar. Para rodar um arquivo só, use
