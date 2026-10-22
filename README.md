@@ -220,6 +220,15 @@ Detalhes no `CLAUDE.md`, seção 4.
   (`src/lib/agent/sql/executor-worker.ts`, via `child_process.fork`) que é morto com `kill()` no
   timeout. O timeout conta a partir do aviso "pronto" do filho (a subida, ~300 ms, tem limite
   próprio de 15 s). Inteiros vêm com `safeIntegers` e viram número quando cabem sem perda, senão texto.
+- **Modelos e prompts (passo 2.3):** os nós dependem da interface `ModelosAgente`
+  (`classificar`/`escreverSql`/`responder`), para injetar modelos falsos nos testes. Classificação:
+  Haiku 5.5 com raciocínio `disabled` e `effort` low; SQL: Sonnet 5.5 com `between_tools` e
+  `effort` medium; resposta: Sonnet 5.5 com `between_tools` e `effort` low. Saída estruturada por
+  JSON schema (`method: "jsonSchema"`). O fallback beta para recusas não foi ligado (reavaliar no
+  passo 2.6). A query anterior vai ao prompt de correção na tag `<sql_anterior>`, que a seção 7.1
+  não lista. A neutralização de tags vale para aberturas e fechamentos de **todas** as tags dos
+  prompts (inclusive com espaços e maiúsculas), não só para o fechamento da tag correspondente.
+  O prompt de SQL orienta `PARTITION BY 1` nas funções de janela (limitação do validador).
 - **⚠️ Ponto de atenção para a Etapa 3 (executor):** o executor faz `fork` de um arquivo `.ts`
   com `--import tsx`. No build do Next.js esse arquivo não fica no bundle, e o `tsx` é dependência
   de desenvolvimento: será preciso empacotar/compilar o worker (ou outra estratégia de processo)
