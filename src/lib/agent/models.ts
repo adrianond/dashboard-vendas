@@ -23,12 +23,14 @@ export const esquemaSql = z.object({
 
 export type Classificacao = z.infer<typeof esquemaClassificacao>;
 export type SqlGerado = z.infer<typeof esquemaSql>;
+// cortada: a geração parou no limite de tokens (stop_reason = "max_tokens"), o texto está incompleto.
+export type RespostaGerada = { texto: string; cortada: boolean };
 
 export interface ModelosAgente {
   classificar(mensagens: BaseMessage[]): Promise<Classificacao>;
   // Usado tanto para gerar quanto para corrigir SQL.
   escreverSql(mensagens: BaseMessage[]): Promise<SqlGerado>;
-  responder(mensagens: BaseMessage[]): Promise<string>;
+  responder(mensagens: BaseMessage[]): Promise<RespostaGerada>;
 }
 
 type OpcoesChat = NonNullable<ConstructorParameters<typeof ChatAnthropic>[0]>;
@@ -67,6 +69,9 @@ export function criarModelosAnthropic(config: Pick<ConfigAgente, "modelos" | "ma
   return {
     classificar: (mensagens) => classificador.invoke(mensagens),
     escreverSql: (mensagens) => escritorSql.invoke(mensagens),
-    responder: async (mensagens) => (await redator.invoke(mensagens)).text,
+    responder: async (mensagens) => {
+      const resposta = await redator.invoke(mensagens);
+      return { texto: resposta.text, cortada: resposta.response_metadata.stop_reason === "max_tokens" };
+    },
   };
 }

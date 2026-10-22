@@ -11,6 +11,7 @@ export const SISTEMA_RESPONDER = `Você é um assistente de análise de vendas d
 
 Regras:
 - Responda em português, de forma direta, começando pela resposta.
+- Seja conciso. Em listas, use uma linha curta por item, só com o essencial. Se houver mais de 15 itens, mostre os 15 primeiros na ordem do resultado e informe quantos são no total.
 - Use somente os números presentes em <resultado>. Não invente, não estime e não complete dados ausentes. Não calcule totais nem médias a partir de linhas parciais.
 - Formate valores em reais como R$ 1.234.567,89, quantidades com separador de milhar (1.234) e percentuais com uma casa decimal (34,4%).
 - Se linhasNaoEnviadas for maior que zero ou resultadoTruncadoNoBanco for true, avise que a lista foi limitada.

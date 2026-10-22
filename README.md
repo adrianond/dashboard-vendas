@@ -300,6 +300,12 @@ Detalhes no `CLAUDE.md`, seção 4.
   --host 127.0.0.1`: o pacote JS `@langchain/langgraph-cli` instala o binário `langgraphjs`
   (`langgraph` é o da CLI Python, citado no PRD), e o host fixo alinha o endereço com o link
   do Studio (no Windows, `localhost` pode resolver para IPv6).
+- **Resposta cortada pelo limite de tokens:** na verificação do passo 2.5, uma lista de 22
+  vendedores estourou `AGENT_MAX_TOKENS_RESPOSTA` (800), e o texto truncado dizia que a lista
+  estava completa. O prompt de resposta pede concisão (acima de 15 itens, mostra os 15
+  primeiros e informa o total). O `responder` devolve `{ texto, cortada }` (`stop_reason =
+  max_tokens`), e uma resposta cortada vira `FALHA` com o motivo em `guardrails`: um texto
+  incompleto nunca é entregue como completo. O limite de tokens não mudou.
 - **`npm test` com `--configLoader runner`:** no Windows, o vitest cai com segfault ao
   empacotar o `vitest.config.mts` (rolldown), dentro e fora do sandbox. Com o loader `runner`, a
   configuração é carregada sem empacotar. Para rodar um arquivo só, use

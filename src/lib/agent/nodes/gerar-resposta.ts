@@ -18,7 +18,10 @@ export function criarNoGerarResposta({ modelos, config }: { modelos: ModelosAgen
         linhas: estado.linhas,
         truncado: estado.truncado,
       };
-      resposta = (await modelos.responder(promptResponder({ pergunta: estado.pergunta, resultado, limites: config }))).trim();
+      const { texto, cortada } = await modelos.responder(promptResponder({ pergunta: estado.pergunta, resultado, limites: config }));
+      // Um texto cortado no meio nunca é entregue como se estivesse completo.
+      if (cortada) return { ...DESFECHO_FALHA, guardrails: [registro("resposta", false, "resposta cortada pelo limite de tokens")] };
+      resposta = texto.trim();
     } catch (erro) {
       return { ...DESFECHO_FALHA, guardrails: [registro("resposta", false, `erro do modelo: ${descreverErro(erro)}`)] };
     }

@@ -31,11 +31,6 @@ erros, 133 testes passando e dados idênticos aos da cópia local.
 - Preencher o hash do commit do passo 2.5 (junto com o commit do passo 2.6).
 - Passo 2.6: reavaliar o fallback beta (fallbacks: "default") para recusas no Sonnet 5.5
   (decidido não ligar no 2.3). Os parâmetros dos modelos funcionaram com a API real no 2.5.
-- Passo 2.6 — resposta cortada: "quais vendedores bateram a meta de valor em setembro de 2026?"
-  (22 linhas) estourou AGENT_MAX_TOKENS_RESPOSTA (800) e o texto truncado dizia "a lista está
-  completa". Opções: (a) subir o limite (ajuste de PRD 7.4); (b) prompt resume listas longas
-  (principais + total); (c) detectar stop_reason = max_tokens e não entregar texto truncado
-  como completo. Recomendação: b + c. Decidir com o desenvolvedor.
 - PRD da Etapa 2, seção 10.2: o texto diz `langgraph dev`, mas o binário da CLI JS é
   `langgraphjs` (script agent:dev já corrigido). Corrigir o PRD se o desenvolvedor aprovar.
 - src/lib/agent usa imports relativos (o empacotador do `langgraph dev` pode não resolver o alias `@/`).

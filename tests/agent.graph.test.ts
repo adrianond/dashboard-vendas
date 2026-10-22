@@ -12,7 +12,7 @@ import {
   rotaAposExecucao,
   rotaAposValidacao,
 } from "@/lib/agent/graph";
-import type { Classificacao, ModelosAgente, SqlGerado } from "@/lib/agent/models";
+import type { Classificacao, ModelosAgente, RespostaGerada, SqlGerado } from "@/lib/agent/models";
 import { MENSAGEM_FALHA } from "@/lib/agent/nodes/responder-falha";
 import { TABELAS_BASE, verificarSaida } from "@/lib/agent/saida";
 import { aplicarLimite, type Linha, type SqlExecutor } from "@/lib/agent/sql/executor";
@@ -29,7 +29,8 @@ const SQL_PROIBIDO = "SELECT * FROM cliente";
 const ANALISE: Classificacao = { categoria: "ANALISE_VENDAS", motivo: "pergunta sobre vendas" };
 
 type Item<T> = T | Error;
-type Roteiro = { classificar?: Item<Classificacao>[]; sql?: Item<SqlGerado>[]; respostas?: Item<string>[] };
+// Resposta em texto simples = completa; RespostaGerada permite roteirizar uma resposta cortada.
+type Roteiro = { classificar?: Item<Classificacao>[]; sql?: Item<SqlGerado>[]; respostas?: Item<string | RespostaGerada>[] };
 type ResultadoFalso = { colunas: string[]; linhas: Linha[]; truncado?: boolean } | { erro: string };
 
 // O agente executa (e guarda no histórico) a versão normalizada pelo validador.
@@ -55,7 +56,11 @@ function criarModelosFalsos(roteiro: Roteiro) {
   const modelos: ModelosAgente = {
     classificar: async (mensagens) => (chamadas.classificar.push(mensagens), proximo(roteiro.classificar, "classificar")),
     escreverSql: async (mensagens) => (chamadas.escreverSql.push(mensagens), proximo(roteiro.sql, "escreverSql")),
-    responder: async (mensagens) => (chamadas.responder.push(mensagens), proximo(roteiro.respostas, "responder")),
+    responder: async (mensagens) => {
+      chamadas.responder.push(mensagens);
+      const item = proximo(roteiro.respostas, "responder");
+      return typeof item === "string" ? { texto: item, cortada: false } : item;
+    },
   };
   const total = () => chamadas.classificar.length + chamadas.escreverSql.length + chamadas.responder.length;
   return { modelos, chamadas, total };
@@ -246,6 +251,16 @@ describe("grafo: guardrail de saída e falhas do modelo", () => {
 
     expect(extrairResultado(estado)).toMatchObject({ status: "FALHA", resposta: MENSAGEM_FALHA, linhas: [] });
     expect(estado.guardrails.at(-1)).toMatchObject({ etapa: "saida", aprovado: false });
+    expect(estado.historico).toHaveLength(0);
+  });
+
+  it("resposta cortada pelo limite de tokens vira FALHA, sem entregar o texto incompleto", async () => {
+    const cortada: RespostaGerada = { texto: "Os vendedores foram:\n| Nome | Valor |\n| Ana | R$ 1.2", cortada: true };
+    const agente = montar({ classificar: [ANALISE], sql: [sql(SQL_OK)], respostas: [cortada] });
+    const estado = await agente.perguntar("quais vendedores bateram a meta?");
+
+    expect(extrairResultado(estado)).toMatchObject({ status: "FALHA", resposta: MENSAGEM_FALHA, linhas: [] });
+    expect(estado.guardrails.at(-1)).toEqual({ etapa: "resposta", aprovado: false, motivo: "resposta cortada pelo limite de tokens" });
     expect(estado.historico).toHaveLength(0);
   });
 
