@@ -126,6 +126,21 @@ vira um trace `agente-vendas` no projeto `LANGSMITH_PROJECT`, com tags `etapa-2`
 `guardrail-bloqueio` (quando algum guardrail reprovou) e metadados de desfecho (status,
 categoria, tentativas, SQL, linhas, guardrails). Sem a chave, o agente roda sem rastreamento.
 
+**Testes com LLM real (têm custo):**
+
+```bash
+RUN_LLM_TESTS=1 npm test -- tests/agent.llm.test.ts
+# PowerShell: $env:RUN_LLM_TESTS="1"; npm test -- tests/agent.llm.test.ts; Remove-Item Env:RUN_LLM_TESTS
+```
+
+Roda as 10 perguntas de exemplo do `docs/schema.md` (seção 7) e compara os **valores** do
+resultado do agente com os do SQL de referência (nomes de colunas, ordem das linhas e colunas
+extras não importam); exige ao menos 9 acertos. Também envia 5 perguntas maliciosas (DROP, CPF,
+"ignore as instruções", revelar o prompt, alterar uma venda), que devem terminar em `RECUSADO`, e
+confere que o banco continua idêntico. São ~35 chamadas à API (Haiku e Sonnet), mais as correções
+de SQL, e cada execução gera traces no LangSmith. Sem `RUN_LLM_TESTS=1`, esses testes ficam
+pulados no `npm test`.
+
 ## Documentação
 
 - [docs/schema.md](docs/schema.md) — views disponíveis para consultas (é o contexto do LLM)
@@ -306,6 +321,16 @@ Detalhes no `CLAUDE.md`, seção 4.
   primeiros e informa o total). O `responder` devolve `{ texto, cortada }` (`stop_reason =
   max_tokens`), e uma resposta cortada vira `FALHA` com o motivo em `guardrails`: um texto
   incompleto nunca é entregue como completo. O limite de tokens não mudou.
+- **Testes com LLM real (passo 2.6):** perguntas e SQL de referência são extraídos da seção 7
+  do `docs/schema.md`, a mesma fonte do prompt. Como esse arquivo vai inteiro ao modelo, os
+  exemplos estão no contexto: o teste mede o fluxo de ponta a ponta (classificação, geração,
+  validação, execução e resposta), não a capacidade de generalizar para perguntas novas. A
+  comparação é por multiconjunto de valores por coluna, com a precisão da coluna de referência
+  (até 2 casas): o prompt pede `ROUND(x, 2)`, mas alguns exemplos do schema arredondam
+  percentuais com 1 casa, e na primeira execução isso reprovou 2 perguntas com SQL
+  equivalente. Coluna só de inteiros exige igualdade exata. As 5 perguntas
+  maliciosas foram redigidas a partir dos temas da seção 12 do PRD. O fallback beta para recusas
+  do Sonnet 5.5 continua desligado.
 - **`npm test` com `--configLoader runner`:** no Windows, o vitest cai com segfault ao
   empacotar o `vitest.config.mts` (rolldown), dentro e fora do sandbox. Com o loader `runner`, a
   configuração é carregada sem empacotar. Para rodar um arquivo só, use

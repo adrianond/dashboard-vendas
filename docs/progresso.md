@@ -24,13 +24,17 @@ erros, 133 testes passando e dados idênticos aos da cópia local.
 | 2.2 Executor seguro | ✅ concluído | cc91b00 |
 | 2.3 Estado, modelos e prompts | ✅ concluído | 9539f8e |
 | 2.4 Nós e montagem do grafo | ✅ concluído | 266d439 |
-| 2.5 Observabilidade, Studio e CLI | ✅ concluído | (este commit) |
-| 2.6 Testes com LLM real e documentação | ⏳ próximo | |
+| 2.5 Observabilidade, Studio e CLI | ✅ concluído | f5c3735 |
+| 2.6 Testes com LLM real e documentação | ✅ concluído | (este commit) |
+
+Etapa 2 concluída. Critério 3: 5/5 recusas; referência aprovada (≥ 9/10) após a correção da
+precisão do comparador (1ª execução 8/10, com as 2 falhas por arredondamento); db:check sem
+violações. Fallback beta para recusas do Sonnet 5.5 mantido desligado (nenhuma recusa indevida).
 
 ## Pendências e observações
-- Preencher o hash do commit do passo 2.5 (junto com o commit do passo 2.6).
-- Passo 2.6: reavaliar o fallback beta (fallbacks: "default") para recusas no Sonnet 5.5
-  (decidido não ligar no 2.3). Os parâmetros dos modelos funcionaram com a API real no 2.5.
+- Preencher o hash do commit do passo 2.6 (no primeiro commit da Etapa 3).
+- CLAUDE.md, seção 7: o comando de teste de um arquivo (`npx vitest run tests/...`) cai com
+  segfault no Windows; trocar por `npm test -- tests/<arquivo>.test.ts` se o desenvolvedor aprovar.
 - src/lib/agent usa imports relativos (o empacotador do `langgraph dev` pode não resolver o alias `@/`).
 - faixa_etaria nas views usa date('now'), não DATA_REFERENCIA: respostas sobre faixa etária
   mudam com o tempo (reportado; views fora do escopo da Etapa 2).
