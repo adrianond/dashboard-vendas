@@ -48,6 +48,8 @@ O seed é determinístico: rodar o `db:reset` de novo gera exatamente os mesmos 
 | `npm run db:reset` | ⚠️ apaga `data/vendas.db`, aplica as migrations e roda o seed |
 | `npm run db:check` | verifica as regras de integridade (sai com código ≠ 0 se houver violação) |
 | `npm run db:studio` | abre o Drizzle Studio (ver abaixo) |
+| `npm run agent:ask -- "pergunta"` | faz perguntas ao agente pelo terminal (ver "Agente") |
+| `npm run agent:dev` | sobe o servidor do LangGraph Studio em http://127.0.0.1:2024 |
 
 > Feche o Drizzle Studio e o `npm run dev` antes do `db:reset`: no Windows, um programa
 > com o banco aberto impede a exclusão do arquivo (erro EPERM/EBUSY).
@@ -86,6 +88,43 @@ Alternativas (sem instalação obrigatória):
 > mão, rode `npm run db:check`; para voltar ao estado original, `npm run db:reset`.
 
 Guia completo do Drizzle no projeto: [docs/drizzle.md](docs/drizzle.md).
+
+## Agente (text-to-SQL)
+
+O agente (`src/lib/agent`) só lê o banco, pela conexão somente leitura e pelas views `vw_*`.
+Usá-lo com o modelo real **tem custo** (API da Anthropic): cada pergunta respondida faz ao menos
+3 chamadas (classificação, SQL e resposta), mais uma por correção de SQL.
+
+**CLI:**
+
+```bash
+npm run agent:ask -- "qual a receita por região em 2025?"
+npm run agent:ask -- --thread t1 "receita de SUVs em 2025" "e em 2024?"
+```
+
+Para cada pergunta, imprime status, resposta, SQL executado, quantidade de linhas, tentativas de
+correção, guardrails aplicados (✓/✗) e o link do trace no LangSmith. Várias perguntas numa mesma
+execução compartilham a conversa (perguntas de acompanhamento). O histórico fica só na memória
+do processo, então outra execução começa uma conversa nova, mesmo com o mesmo `--thread`.
+
+**LangGraph Studio:**
+
+1. `npm run agent:dev` (sobe o servidor local em `http://127.0.0.1:2024`; Ctrl+C encerra).
+2. Abra https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024 (exige login no
+   LangSmith; a página conversa com o servidor local).
+3. Escolha o grafo `agente_vendas`, preencha o campo `pergunta` na entrada e clique em **Submit**.
+4. Cada nó percorrido aparece destacado no grafo; clique num passo da execução para inspecionar o
+   estado (SQL, erros, tentativas, linhas, guardrails).
+5. Para reexecutar a partir de um nó, abra o passo desejado no histórico do thread, edite o
+   estado se quiser (ex.: o `sql`) e use **Re-run from here** (fork).
+
+O grafo do Studio usa os modelos e o executor reais. O servidor do LangGraph guarda os threads,
+e o grafo não tem checkpointer próprio.
+
+**LangSmith:** com `LANGSMITH_TRACING=true` e `LANGSMITH_API_KEY`, cada pergunta feita pelo CLI
+vira um trace `agente-vendas` no projeto `LANGSMITH_PROJECT`, com tags `etapa-2`, os modelos e
+`guardrail-bloqueio` (quando algum guardrail reprovou) e metadados de desfecho (status,
+categoria, tentativas, SQL, linhas, guardrails). Sem a chave, o agente roda sem rastreamento.
 
 ## Documentação
 
@@ -245,6 +284,22 @@ Detalhes no `CLAUDE.md`, seção 4.
     não só `FROM vw_`;
   - o `graph` padrão para o Studio (modelos reais) fica para o passo 2.5, para não exigir a
     `ANTHROPIC_API_KEY` ao importar `src/lib/agent`.
+- **Observabilidade, Studio e CLI (passo 2.5):** o trace de cada pergunta é criado por um
+  `traceable` do langsmith (`src/lib/agent/observabilidade.ts`, arquivo fora da lista do PRD) que
+  envolve o `invoke`; os metadados e as tags de desfecho são gravados no fechamento do trace. Os
+  metadados de desfecho só existem nas execuções feitas por esse wrapper (CLI e, na Etapa 3, a
+  API). No Studio, o próprio servidor executa o grafo, que tem `runName` e tags fixas
+  (`withConfig`). `guardrail-bloqueio` marca qualquer guardrail reprovado, inclusive uma query
+  reprovada e depois corrigida. O `graph` do `langgraph.json` é uma fábrica (o langgraph-api
+  aceita função), para importar `src/lib/agent` sem exigir a chave. O CLI aceita várias perguntas
+  numa execução, que compartilham o thread, porque o `MemorySaver` vive só no processo; um
+  checkpointer em arquivo exigiria dependência nova. O link do trace usa `client.getRunUrl`
+  com `{ run, projectOpts }` (marcado como obsoleto no langsmith 0.10, com remoção prevista
+  para 2027); a forma por `runId` lê a run na API e falha em execuções rápidas, como uma
+  recusa, antes de a run ser registrada. O `agent:dev` roda `langgraphjs dev --no-browser
+  --host 127.0.0.1`: o pacote JS `@langchain/langgraph-cli` instala o binário `langgraphjs`
+  (`langgraph` é o da CLI Python, citado no PRD), e o host fixo alinha o endereço com o link
+  do Studio (no Windows, `localhost` pode resolver para IPv6).
 - **`npm test` com `--configLoader runner`:** no Windows, o vitest cai com segfault ao
   empacotar o `vitest.config.mts` (rolldown), dentro e fora do sandbox. Com o loader `runner`, a
   configuração é carregada sem empacotar. Para rodar um arquivo só, use

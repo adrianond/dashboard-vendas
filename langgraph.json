@@ -1,0 +1,7 @@
+{
+  "node_version": "24",
+  "graphs": {
+    "agente_vendas": "./src/lib/agent/index.ts:graph"
+  },
+  "env": ".env.local"
+}

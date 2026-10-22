@@ -23,16 +23,21 @@ erros, 133 testes passando e dados idênticos aos da cópia local.
 | 2.1 Validador de SQL | ✅ concluído | 44662ae |
 | 2.2 Executor seguro | ✅ concluído | cc91b00 |
 | 2.3 Estado, modelos e prompts | ✅ concluído | 9539f8e |
-| 2.4 Nós e montagem do grafo | ✅ concluído | (este commit) |
-| 2.5 Observabilidade, Studio e CLI | ⏳ próximo | |
-| 2.6 Testes com LLM real e documentação | ⬜ | |
+| 2.4 Nós e montagem do grafo | ✅ concluído | 266d439 |
+| 2.5 Observabilidade, Studio e CLI | ✅ concluído | (este commit) |
+| 2.6 Testes com LLM real e documentação | ⏳ próximo | |
 
 ## Pendências e observações
-- Preencher o hash do commit do passo 2.4 (junto com o commit do passo 2.5).
-- Passo 2.5: exportar em src/lib/agent/index.ts o `graph` do Studio (createAgent com
-  criarModelosAnthropic e checkpointer: false), sem exigir a chave só para importar o módulo.
+- Preencher o hash do commit do passo 2.5 (junto com o commit do passo 2.6).
 - Passo 2.6: reavaliar o fallback beta (fallbacks: "default") para recusas no Sonnet 5.5
-  (decidido não ligar no 2.3). Os parâmetros dos modelos ainda não foram testados com a API real.
+  (decidido não ligar no 2.3). Os parâmetros dos modelos funcionaram com a API real no 2.5.
+- Passo 2.6 — resposta cortada: "quais vendedores bateram a meta de valor em setembro de 2026?"
+  (22 linhas) estourou AGENT_MAX_TOKENS_RESPOSTA (800) e o texto truncado dizia "a lista está
+  completa". Opções: (a) subir o limite (ajuste de PRD 7.4); (b) prompt resume listas longas
+  (principais + total); (c) detectar stop_reason = max_tokens e não entregar texto truncado
+  como completo. Recomendação: b + c. Decidir com o desenvolvedor.
+- PRD da Etapa 2, seção 10.2: o texto diz `langgraph dev`, mas o binário da CLI JS é
+  `langgraphjs` (script agent:dev já corrigido). Corrigir o PRD se o desenvolvedor aprovar.
 - src/lib/agent usa imports relativos (o empacotador do `langgraph dev` pode não resolver o alias `@/`).
 - faixa_etaria nas views usa date('now'), não DATA_REFERENCIA: respostas sobre faixa etária
   mudam com o tempo (reportado; views fora do escopo da Etapa 2).
