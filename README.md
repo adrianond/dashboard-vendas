@@ -229,6 +229,10 @@ Detalhes no `CLAUDE.md`, seção 4.
   não lista. A neutralização de tags vale para aberturas e fechamentos de **todas** as tags dos
   prompts (inclusive com espaços e maiúsculas), não só para o fechamento da tag correspondente.
   O prompt de SQL orienta `PARTITION BY 1` nas funções de janela (limitação do validador).
+- **`npm test` com `--configLoader runner`:** no Windows, o vitest cai com segfault ao
+  empacotar o `vitest.config.mts` (rolldown), dentro e fora do sandbox. Com o loader `runner`, a
+  configuração é carregada sem empacotar. Para rodar um arquivo só, use
+  `npm test -- tests/<arquivo>.test.ts` (ou `npx vitest run --configLoader runner tests/...`).
 - **⚠️ Ponto de atenção para a Etapa 3 (executor):** o executor faz `fork` de um arquivo `.ts`
   com `--import tsx`. No build do Next.js esse arquivo não fica no bundle, e o `tsx` é dependência
   de desenvolvimento: será preciso empacotar/compilar o worker (ou outra estratégia de processo)

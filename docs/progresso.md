@@ -29,9 +29,6 @@ erros, 133 testes passando e dados idênticos aos da cópia local.
 
 ## Pendências e observações
 - Preencher o hash do commit do passo 2.3 (junto com o commit do passo 2.4).
-- vitest: o processo cai com segfault ao empacotar o vitest.config.mts (rolldown no Windows),
-  dentro e fora do sandbox. Contorno: `npx vitest run --configLoader runner`. Decidir se o
-  script "test" do package.json passa a usar a flag.
 - Passo 2.6: reavaliar o fallback beta (fallbacks: "default") para recusas no Sonnet 5.5
   (decidido não ligar no 2.3). Os parâmetros dos modelos ainda não foram testados com a API real.
 - src/lib/agent usa imports relativos (o empacotador do `langgraph dev` pode não resolver o alias `@/`).
