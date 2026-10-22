@@ -31,8 +31,6 @@ erros, 133 testes passando e dados idênticos aos da cópia local.
 - Preencher o hash do commit do passo 2.5 (junto com o commit do passo 2.6).
 - Passo 2.6: reavaliar o fallback beta (fallbacks: "default") para recusas no Sonnet 5.5
   (decidido não ligar no 2.3). Os parâmetros dos modelos funcionaram com a API real no 2.5.
-- PRD da Etapa 2, seção 10.2: o texto diz `langgraph dev`, mas o binário da CLI JS é
-  `langgraphjs` (script agent:dev já corrigido). Corrigir o PRD se o desenvolvedor aprovar.
 - src/lib/agent usa imports relativos (o empacotador do `langgraph dev` pode não resolver o alias `@/`).
 - faixa_etaria nas views usa date('now'), não DATA_REFERENCIA: respostas sobre faixa etária
   mudam com o tempo (reportado; views fora do escopo da Etapa 2).

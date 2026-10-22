@@ -314,7 +314,7 @@ O motivo de reprovação deve ser técnico e útil para a correção (ex.: "tabe
 }
 ```
 
-- Script `agent:dev` executa `langgraph dev` (via `@langchain/langgraph-cli`), que sobe o servidor local em `http://127.0.0.1:2024`. O Studio abre em `https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024`.
+- Script `agent:dev` executa `langgraphjs dev --no-browser --host 127.0.0.1` (binário do `@langchain/langgraph-cli`), que sobe o servidor local em `http://127.0.0.1:2024`. O Studio abre em `https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024`.
 - O grafo exportado para o Studio é criado com os modelos reais e o executor real. **Não** passar checkpointer ao grafo exportado para o Studio: o servidor do LangGraph gerencia a persistência.
 - O README explica como abrir o Studio, enviar uma pergunta, ver cada nó, inspecionar o estado e reexecutar a partir de um nó.
 
@@ -486,3 +486,4 @@ Execute os passos **na ordem**. Dentro de cada passo, toda ação segue o protoc
 | 2026-10-21 | 8 (regra 7) | Funções de janela exigem `OVER (PARTITION BY ...)`; o motivo orienta `PARTITION BY 1` | O `node-sql-parser` 5.4.0 (dialeto sqlite) não entende `OVER ()` nem `OVER (ORDER BY ...)`; mantida a falha fechada (decisão do desenvolvedor) |
 | 2026-10-21 | 12 | Instrução dentro de comentário é aprovada (comentário removido); segunda instrução após comentário reprova | Comentário não é executado; o `sqlNormalizado` vem da AST, sem comentários (decisão do desenvolvedor) |
 | 2026-10-21 | 5, 9 e 13 | Executor roda a query num processo filho encerrado com `kill()` no timeout, em vez de worker thread | Sonda no passo 2.2: com uma query cara, `worker.terminate()` não interrompeu a thread presa no SQLite (o processo não terminava); o `better-sqlite3` não tem interrupção. O processo filho foi encerrado no tempo exato. Reforça a camada 4 |
+| 2026-10-22 | 10.2 | `agent:dev` usa `langgraphjs dev --no-browser --host 127.0.0.1` | O pacote JS instala o binário `langgraphjs` (`langgraph` é o da CLI Python); o host fixo alinha o servidor com o link do Studio (no Windows, `localhost` pode resolver para IPv6) |
