@@ -49,6 +49,15 @@ violações. Fallback beta para recusas do Sonnet 5.5 mantido desligado (nenhuma
 
 Passo 3.0: 14 correções no PRD (D1–D14, ver "Histórico de alterações" do PRD).
 
+## Análise do projeto (docs/analise/)
+
+Série de documentos de análise pedida pelo desenvolvedor, fora dos passos dos PRDs. Não altera
+código; o próximo passo da Etapa 3 continua sendo o 3.1.
+
+| Nº | Documento | Status | Commit |
+|---|---|---|---|
+| 01 | Tabelas e entidades: onde são definidas e como são criadas (`01-tabelas-e-entidades.md`) | ✅ concluído | (este commit) |
+
 ## Pendências e observações
 - Preencher o hash do commit do passo 3.0 (junto com o commit do passo 3.1).
 - CLAUDE.md, seção 7: o comando de teste de um arquivo (`npx vitest run tests/...`) cai com
