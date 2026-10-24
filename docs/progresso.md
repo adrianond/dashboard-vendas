@@ -1,5 +1,13 @@
 # Progresso
 
+## Ponto de retomada
+
+- **Última sessão:** 2026-10-24. Análises 02 (testes, `41b20df`) e 03 (fluxo de execução do grafo,
+  `1f7dcff`) concluídas.
+- **Próximo:** passo 3.1 — Camada de indicadores (`PRD-etapa-03-api-e-qualidade.md`), começando
+  pela instalação do `server-only` e pelo alias no vitest (ver pendências).
+- **Estado do repositório:** código sem alterações pendentes; nada fora do git.
+
 ## Etapa 1 — Fundação e dados (PRD-etapa-01-fundacao-e-dados.md)
 
 | Passo | Status | Commit |
@@ -35,7 +43,7 @@ violações. Fallback beta para recusas do Sonnet 5.5 mantido desligado (nenhuma
 
 | Passo | Status | Commit |
 |---|---|---|
-| 3.0 Revisão do PRD contra o código real | ✅ concluído | (este commit) |
+| 3.0 Revisão do PRD contra o código real | ✅ concluído | e3fbbe3 |
 | 3.1 Camada de indicadores | ⏳ próximo | |
 | 3.2 Infraestrutura da API | ⬜ | |
 | 3.3 Rotas de indicadores e filtros | ⬜ | |
@@ -58,10 +66,9 @@ código; o próximo passo da Etapa 3 continua sendo o 3.1.
 |---|---|---|---|
 | 01 | Tabelas e entidades: onde são definidas e como são criadas (`01-tabelas-e-entidades.md`) | ✅ concluído | ba0ac69 |
 | 02 | Testes: responsabilidade de cada arquivo e como executar (`02-testes.md`) | ✅ concluído | 41b20df |
-| 03 | Fluxo de execução do grafo no LangGraph Studio (`03-fluxo-do-grafo.md`) | ✅ concluído | (este commit) |
+| 03 | Fluxo de execução do grafo no LangGraph Studio (`03-fluxo-do-grafo.md`) | ✅ concluído | 1f7dcff |
 
 ## Pendências e observações
-- Preencher o hash do commit do passo 3.0 (junto com o commit do passo 3.1).
 - CLAUDE.md, seção 7: o comando de teste de um arquivo (`npx vitest run tests/...`) cai com
   segfault no Windows; trocar por `npm test -- tests/<arquivo>.test.ts` se o desenvolvedor aprovar.
 - src/lib/agent usa imports relativos (o empacotador do `langgraph dev` pode não resolver o alias `@/`).
@@ -74,3 +81,5 @@ código; o próximo passo da Etapa 3 continua sendo o 3.1.
 - Passo 3.4: instalar @langchain/langgraph-checkpoint-sqlite com overrides para o better-sqlite3 13
   (decisão do desenvolvedor, opção b) e provar a persistência após reinício; se falhar, voltar
   para a cópia aninhada do better-sqlite3 12 (opção a), com anúncio.
+- Passos 3.4/3.5: a entrada da API aceita só `pergunta` e o thread; o estado do grafo aceita
+  qualquer campo, inclusive `historico` (ver docs/analise/03-fluxo-do-grafo.md, seção 8).
