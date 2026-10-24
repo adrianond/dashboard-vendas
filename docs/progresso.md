@@ -56,7 +56,8 @@ código; o próximo passo da Etapa 3 continua sendo o 3.1.
 
 | Nº | Documento | Status | Commit |
 |---|---|---|---|
-| 01 | Tabelas e entidades: onde são definidas e como são criadas (`01-tabelas-e-entidades.md`) | ✅ concluído | (este commit) |
+| 01 | Tabelas e entidades: onde são definidas e como são criadas (`01-tabelas-e-entidades.md`) | ✅ concluído | ba0ac69 |
+| 02 | Testes: responsabilidade de cada arquivo e como executar (`02-testes.md`) | ✅ concluído | (este commit) |
 
 ## Pendências e observações
 - Preencher o hash do commit do passo 3.0 (junto com o commit do passo 3.1).
