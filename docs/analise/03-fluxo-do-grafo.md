@@ -6,7 +6,8 @@
 
 **Resumo.** A aplicação recebe uma pergunta em linguagem natural sobre vendas e devolve uma
 resposta em português calculada a partir do banco SQLite. Quem faz isso é **um único grafo
-LangGraph**, o `agente_vendas`, com **9 nós**. Três deles chamam o LLM (classificar, escrever SQL e
+LangGraph com 9 nós**, montado pela função `createAgent()` (`graph.ts`); no LangGraph Studio esse
+grafo é registrado com o nome `agente_vendas` (ver "Sobre os termos"). Três deles chamam o LLM (classificar, escrever SQL e
 redigir a resposta); os outros seis são código determinístico (validação de entrada, validação do
 SQL, execução, recusa e falha). As **arestas condicionais** (funções de rota) leem o estado depois
 de cada nó e decidem qual nó roda em seguida: é isso que define se um nó é executado ou não. Não há
@@ -16,6 +17,20 @@ do mesmo thread é só o **histórico** das últimas trocas bem-sucedidas.
 > **Sobre os termos.** "Grafo" é o fluxo inteiro (`StateGraph`), e "nó" é cada etapa dele
 > (`validarEntrada`, `gerarSql`...). O projeto tem **um grafo e nenhum subgrafo**; quando se fala
 > em "qual grafo é executado", na prática a pergunta é **qual nó é executado**.
+>
+> **`agente_vendas` não é um arquivo, classe nem módulo:** é só o **nome** com que o grafo é
+> registrado no servidor do Studio (`langgraph.json`: `"agente_vendas": "./src/lib/agent/index.ts:graph"`,
+> ou seja, "registre um grafo chamado `agente_vendas`; para obtê-lo, chame o export `graph` do
+> `index.ts`"). O que existe de fato no código é o grafo compilado devolvido por `createAgent()`.
+> Três nomes parecidos, com papéis diferentes:
+>
+> | Nome | Onde | O que é | Usado por |
+> |---|---|---|---|
+> | `agente_vendas` (sublinhado) | `langgraph.json` | Identificador do grafo no servidor do Studio (aparece no seletor de grafos) | Só o Studio (`npm run agent:dev`) |
+> | `agente-vendas` (hífen) | `NOME_DO_TRACE` em `observabilidade.ts` | Nome do trace no LangSmith | Studio (via `withConfig`), CLI e testes com LLM |
+> | `createAgent` / `Agente` | `graph.ts` | A função que monta o grafo e o tipo do grafo compilado | Todas as formas de execução |
+>
+> No CLI e nos testes o nome `agente_vendas` não aparece: eles chamam `createAgent()` direto.
 
 ---
 
@@ -59,21 +74,40 @@ O Studio é uma página do LangSmith (`https://smith.langchain.com/studio/?baseU
 que conversa com um **servidor local**. **Quem executa o grafo, chama o LLM e consulta o banco é o
 servidor local, na máquina do desenvolvedor**; o LangSmith só exibe a tela e recebe os traces.
 
-```
-npm run agent:dev
-  └─ langgraphjs dev lê langgraph.json            (configuração; não executa nada)
-       └─ importa src/lib/agent/index.ts          (só registra a fábrica graph(); não exige a chave)
+**Linha do tempo: três momentos diferentes.** Enviar uma mensagem pela tela **não** relê o
+`langgraph.json` nem reimporta o `index.ts`: isso já aconteceu quando o servidor subiu.
 
-1º uso do grafo (abrir o Studio ou a primeira run)
-  └─ servidor chama graph()
-       └─ createAgent({ modelos reais, checkpointer: false })   (monta e compila; NÃO executa)
+```
+MOMENTO 1 — uma vez, ao rodar npm run agent:dev
+  └─ langgraphjs dev lê langgraph.json            (configuração; não é executado)
+       └─ importa src/lib/agent/index.ts          (só registra a fábrica graph() com o nome
+                                                   agente_vendas; não exige a chave)
+
+MOMENTO 2 — uma vez, no 1º uso do grafo (abrir o Studio ou a primeira mensagem)
+  └─ servidor chama graph()                       (index.ts)
+       └─ createAgent({ modelos reais, checkpointer: false })   (graph.ts: monta e compila;
+                                                                 NENHUM nó roda aqui)
             └─ servidor injeta o próprio checkpointer no grafo compilado
-                 └─ a fábrica guarda o grafo; as próximas chamadas reaproveitam o mesmo
+                 └─ a fábrica guarda o grafo na memória do servidor
 
-Cada Submit no Studio
-  └─ servidor faz invoke/stream do grafo com { pergunta } e o thread escolhido
-       └─ START → validarEntrada → ... → END   (o fluxo da seção 3)
+MOMENTO 3 — a cada mensagem enviada pela tela (Submit)
+  └─ servidor executa o grafo JÁ COMPILADO com { pergunta } e o thread escolhido
+       └─ START → validarEntrada → rota → classificarPergunta → rota → ... → END
+          (rodam as funções dos nós, em nodes/*.ts, e depois de cada nó a função de rota,
+           em graph.ts:19-41, que escolhe o próximo; o fluxo está na seção 3)
 ```
+
+| Momento | `langgraph.json` | `index.ts` | `createAgent()` (`graph.ts`) | Nós (`nodes/*.ts`) e rotas (`graph.ts`) |
+|---|---|---|---|---|
+| 1. `agent:dev` | lido | importado | — | — |
+| 2. 1º uso | — | `graph()` chamada | executado (monta e compila) | — |
+| 3. Cada mensagem | — | — | — | **executados** |
+
+O trabalho de verdade de cada pergunta (validar, chamar o LLM, validar e executar o SQL, redigir a
+resposta) está nos arquivos de `nodes/`. Do `graph.ts`, a cada mensagem, rodam só as funções de
+rota. **Recarga:** o `langgraphjs dev` observa os arquivos (opção `--no-reload` desliga); ao
+alterar o código do agente com o servidor ligado, ele recarrega e os momentos 1 e 2 acontecem de
+novo.
 
 Passo a passo:
 
