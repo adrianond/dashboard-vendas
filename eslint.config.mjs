@@ -5,10 +5,11 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  // Camada 1 de segurança (CLAUDE.md, seção 4): o agente só acessa o banco pelo
-  // readonly-client.ts. Bloqueia a conexão de escrita, o seed e a abertura direta do SQLite.
+  // Camada 1 de segurança (CLAUDE.md, seção 4; PRD da Etapa 3, seção 6.1): o agente e os
+  // indicadores só acessam o banco pelo readonly-client.ts. Bloqueia a conexão de escrita, o seed
+  // e a abertura direta do SQLite.
   {
-    files: ["src/lib/agent/**/*.{ts,tsx}"],
+    files: ["src/lib/agent/**/*.{ts,tsx}", "src/lib/indicadores/**/*.{ts,tsx}"],
     rules: {
       "@typescript-eslint/no-restricted-imports": [
         "error",
@@ -16,12 +17,12 @@ const eslintConfig = defineConfig([
           patterns: [
             {
               group: ["**/db/client", "**/db/client.ts", "**/db/seed", "**/db/seed/**"],
-              message: "O agente só pode usar src/lib/db/readonly-client.ts (CLAUDE.md, seção 4).",
+              message: "O agente e os indicadores só podem usar src/lib/db/readonly-client.ts (CLAUDE.md, seção 4).",
             },
             {
               group: ["better-sqlite3", "drizzle-orm/better-sqlite3"],
               allowTypeImports: true,
-              message: "O agente não abre conexões próprias: use src/lib/db/readonly-client.ts.",
+              message: "O agente e os indicadores não abrem conexões próprias: use src/lib/db/readonly-client.ts.",
             },
           ],
         },
