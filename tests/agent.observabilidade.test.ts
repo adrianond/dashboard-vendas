@@ -65,7 +65,8 @@ describe("metadados do trace", () => {
 
 describe("grafo do Studio", () => {
   // Só cria o grafo (sem chamada à API); exige a chave, por isso roda apenas quando ela existe.
-  it.skipIf(!env.ANTHROPIC_API_KEY)("a fábrica devolve o grafo com os 9 nós", async () => {
+  // Prazo próprio: o import carrega o LangChain inteiro e, com a suíte em paralelo, passava dos 5 s.
+  it.skipIf(!env.ANTHROPIC_API_KEY)("a fábrica devolve o grafo com os 9 nós", { timeout: 30_000 }, async () => {
     const { graph } = await import("@/lib/agent");
     const grafo = graph();
     expect(graph()).toBe(grafo);

@@ -140,7 +140,7 @@ Regras inegociáveis:
 | `npm run dev` / `build` / `lint` | Next.js |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm test` | vitest (todos os testes em `tests/`) |
-| `npx vitest run tests/db.views.test.ts` | um arquivo de teste; use `-t "<nome>"` para um único caso |
+| `npm test -- tests/db.views.test.ts` | um arquivo de teste; use `-t "<nome>"` para um único caso (o `npx vitest run` sem `--configLoader runner` cai no Windows) |
 | `npm run db:generate` / `db:migrate` | gerar / aplicar migrations do drizzle-kit (`drizzle/`) |
 | `npm run db:seed` | limpar e recarregar dados sintéticos (determinístico, `faker.seed(42)`) |
 | `npm run db:reset` | ⚠️ apagar `data/vendas.db`, migrar e popular de novo |

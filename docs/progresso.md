@@ -2,10 +2,11 @@
 
 ## Ponto de retomada
 
-- **Última sessão:** 2026-10-24. Análises 02 (testes, `41b20df`) e 03 (fluxo de execução do grafo,
-  `1f7dcff`) concluídas.
-- **Próximo:** passo 3.1 — Camada de indicadores (`PRD-etapa-03-api-e-qualidade.md`), começando
-  pela instalação do `server-only` e pelo alias no vitest (ver pendências).
+- **Última sessão:** 2026-11-16. Resolvidas as pendências do comando de teste no CLAUDE.md e do
+  prazo do teste do grafo do Studio. Análises 02 e 03 concluídas antes (2026-10-24).
+- **Próximo:** decidir a pendência da `faixa_etaria` (opções a/b/c, ver pendências); depois, passo
+  3.1 — Camada de indicadores (`PRD-etapa-03-api-e-qualidade.md`), começando pela instalação do
+  `server-only` e pelo alias no vitest.
 - **Estado do repositório:** código sem alterações pendentes; nada fora do git.
 
 ## Etapa 1 — Fundação e dados (PRD-etapa-01-fundacao-e-dados.md)
@@ -69,11 +70,11 @@ código; o próximo passo da Etapa 3 continua sendo o 3.1.
 | 03 | Fluxo de execução do grafo no LangGraph Studio (`03-fluxo-do-grafo.md`) | ✅ concluído | 1f7dcff |
 
 ## Pendências e observações
-- CLAUDE.md, seção 7: o comando de teste de um arquivo (`npx vitest run tests/...`) cai com
-  segfault no Windows; trocar por `npm test -- tests/<arquivo>.test.ts` se o desenvolvedor aprovar.
 - src/lib/agent usa imports relativos (o empacotador do `langgraph dev` pode não resolver o alias `@/`).
 - faixa_etaria nas views usa date('now'), não DATA_REFERENCIA: respostas sobre faixa etária
-  mudam com o tempo (reportado; views fora do escopo da Etapa 2).
+  mudam com o tempo (reportado; views fora do escopo da Etapa 2). Opções apresentadas em
+  2026-11-16 (a: data fixa 2026-09-30; b: idade na data do evento; c: manter); aguarda decisão
+  do desenvolvedor. Qualquer correção é uma migration nova (0002).
 - Passo 3.1: instalar o pacote server-only e criar o alias no vitest para o módulo vazio do
   pacote (PRD 6.1).
 - Passo 3.4: empacotar o processo filho do executor no Next.js (fork de um .ts com --import tsx;

@@ -52,8 +52,9 @@ argumentos depois do `--`:
 | Um caso (ou um grupo) pelo nome | `npm test -- tests/agent.graph.test.ts -t "sucesso direto"` |
 | Todos os casos cujo nome contém um texto, em qualquer arquivo | `npm test -- -t "timeout"` |
 
-> O `CLAUDE.md` (seção 7) ainda cita `npx vitest run tests/db.views.test.ts`. Sem a flag
-> `--configLoader runner`, esse comando cai no Windows; prefira `npm test -- <arquivo>`.
+> Sem a flag `--configLoader runner`, `npx vitest run tests/...` cai no Windows; prefira
+> `npm test -- <arquivo>`. (O `CLAUDE.md`, seção 7, citava o comando antigo; corrigido depois
+> desta análise.)
 
 ### Pré-requisito: o banco precisa existir
 
@@ -239,9 +240,10 @@ As camadas são as da seção 4 do `CLAUDE.md`.
    carrega o LangChain inteiro. Com a suíte rodando em paralelo, isso às vezes passa dos 5 s de
    prazo padrão do vitest: em 2026-10-23 ele falhou numa execução completa e passou isolado e numa
    segunda execução. *Sugestão:* dar a ele um prazo próprio, como fazem os testes do executor.
-2. **O comando de exemplo no `CLAUDE.md` está desatualizado.** A seção 7 cita
-   `npx vitest run tests/...`, que cai no Windows sem `--configLoader runner`. A troca por
-   `npm test -- tests/<arquivo>.test.ts` está pendente de aprovação (registrada no `progresso.md`).
+   **Resolvido depois desta análise:** o caso ganhou `{ timeout: 30_000 }`.
+2. **O comando de exemplo no `CLAUDE.md` estava desatualizado.** A seção 7 citava
+   `npx vitest run tests/...`, que cai no Windows sem `--configLoader runner`. **Resolvido depois
+   desta análise:** trocado por `npm test -- tests/<arquivo>.test.ts`.
 3. **Os testes dependem do banco real.** Nove arquivos leem o `data/vendas.db` gerado pelo seed.
    Isso prova o comportamento com os dados de verdade, mas um banco ausente ou editado à mão
    reprova testes que não têm relação com a edição. A saída é sempre `npm run db:reset`.
