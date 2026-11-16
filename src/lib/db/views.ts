@@ -1,5 +1,6 @@
 // Camada de dados do LLM (PRD, seção 6.5; CLAUDE.md, seção 4). As views são criadas pela
-// migration drizzle/0001_views.sql. Na Etapa 2, o validador de SQL usa ALLOWED_VIEWS como allowlist.
+// migration drizzle/0001_views.sql; a 0002 recria as 3 que calculam a faixa etária (idade na data
+// de referência). Na Etapa 2, o validador de SQL usa ALLOWED_VIEWS como allowlist.
 
 export const ALLOWED_VIEWS = [
   // Visões analíticas (primeira escolha do LLM)

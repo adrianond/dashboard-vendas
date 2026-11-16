@@ -15,6 +15,13 @@
       "when": 1791555685241,
       "tag": "0001_views",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1794872306482,
+      "tag": "0002_faixa_etaria_data_referencia",
+      "breakpoints": true
     }
   ]
 }

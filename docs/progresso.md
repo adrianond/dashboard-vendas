@@ -2,11 +2,11 @@
 
 ## Ponto de retomada
 
-- **Última sessão:** 2026-11-16. Resolvidas as pendências do comando de teste no CLAUDE.md e do
-  prazo do teste do grafo do Studio. Análises 02 e 03 concluídas antes (2026-10-24).
-- **Próximo:** decidir a pendência da `faixa_etaria` (opções a/b/c, ver pendências); depois, passo
-  3.1 — Camada de indicadores (`PRD-etapa-03-api-e-qualidade.md`), começando pela instalação do
-  `server-only` e pelo alias no vitest.
+- **Última sessão:** 2026-11-16. Resolvidas as pendências fora dos PRDs: comando de teste no
+  CLAUDE.md, prazo do teste do grafo do Studio e `faixa_etaria` na data de referência (migration
+  0002, opção a). As pendências restantes pertencem aos passos 3.1 e 3.4/3.5.
+- **Próximo:** passo 3.1 — Camada de indicadores (`PRD-etapa-03-api-e-qualidade.md`), começando
+  pela instalação do `server-only` e pelo alias no vitest.
 - **Estado do repositório:** código sem alterações pendentes; nada fora do git.
 
 ## Etapa 1 — Fundação e dados (PRD-etapa-01-fundacao-e-dados.md)
@@ -71,10 +71,9 @@ código; o próximo passo da Etapa 3 continua sendo o 3.1.
 
 ## Pendências e observações
 - src/lib/agent usa imports relativos (o empacotador do `langgraph dev` pode não resolver o alias `@/`).
-- faixa_etaria nas views usa date('now'), não DATA_REFERENCIA: respostas sobre faixa etária
-  mudam com o tempo (reportado; views fora do escopo da Etapa 2). Opções apresentadas em
-  2026-11-16 (a: data fixa 2026-09-30; b: idade na data do evento; c: manter); aguarda decisão
-  do desenvolvedor. Qualquer correção é uma migration nova (0002).
+- Resolvido (2026-11-16): faixa_etaria passou a usar a idade em 2026-09-30 (migration 0002,
+  opção a do desenvolvedor). Mudar a DATA_REFERENCIA exige uma migration nova; um teste em
+  tests/db.views.test.ts acusa a divergência.
 - Passo 3.1: instalar o pacote server-only e criar o alias no vitest para o módulo vazio do
   pacote (PRD 6.1).
 - Passo 3.4: empacotar o processo filho do executor no Next.js (fork de um .ts com --import tsx;

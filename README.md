@@ -195,8 +195,11 @@ Detalhes no `CLAUDE.md`, seção 4.
   O WAL é ligado pelo `client.ts` e fica gravado no arquivo; o `readonly-client.ts` o herda
   (verificado: `journal_mode = wal`, `query_only = 1`).
 - **Views:** colunas listadas explicitamente (sem `SELECT *`), para que coluna nova em tabela
-  base nunca vaze sozinha. `faixa_etaria` usa a idade na data atual (`date('now')`), com a
-  expressão repetida nas 3 views porque views não podem ser montadas sobre views.
+  base nunca vaze sozinha. `faixa_etaria` usa a idade na data de referência dos dados
+  (`2026-09-30`, migration `0002`), com a expressão repetida nas 3 views porque views não podem
+  ser montadas sobre views. Até a 0002 usava a data atual (`'now'`), e a mesma pergunta mudava de
+  resposta com o tempo. Uma view não lê o `.env`: a data é literal, e mudar a `DATA_REFERENCIA`
+  exige uma migration nova (`tests/db.views.test.ts` confere que as duas coincidem).
   `desconto_percentual` vai de 0 a 100, com 2 casas. `dias_*` são inteiros calculados com
   `julianday`. `vw_desempenho_vendedor_mes` usa a unidade atual do vendedor.
 - **Migration das views:** criada com `drizzle-kit generate --custom` (`drizzle/0001_views.sql`),

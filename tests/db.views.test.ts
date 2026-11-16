@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readonlyDb } from "@/lib/db/readonly-client";
 import { ALLOWED_VIEWS, EXCLUDED_COLUMNS } from "@/lib/db/views";
+import { env } from "@/lib/env";
 
 // Camada 2 de segurança (PRD, seções 6.5 e 14; critério de aceite 9). Lê pela conexão
 // somente leitura, como o agente fará.
@@ -21,6 +22,13 @@ const valor = (sql: string) => (readonlyDb.prepare(sql).get() as { n: number }).
 const plano = (sql: string) =>
   (readonlyDb.prepare(`EXPLAIN QUERY PLAN ${sql}`).all() as { detail: string }[]).map((l) => l.detail);
 const varreSemIndice = (linha: string) => linha.startsWith("SCAN ") && !linha.includes("INDEX");
+
+// Faixa etária esperada, calculada fora do SQL, na data de referência dos dados.
+function faixaEtaria(dataNascimento: string, referencia: string): string {
+  const [anoNasc, mesDiaNasc] = [Number(dataNascimento.slice(0, 4)), dataNascimento.slice(5)];
+  const idade = Number(referencia.slice(0, 4)) - anoNasc - (referencia.slice(5) < mesDiaNasc ? 1 : 0);
+  return idade < 30 ? "18-29" : idade < 45 ? "30-44" : idade < 60 ? "45-59" : "60+";
+}
 
 describe("views do LLM: existência e exposição de dados", () => {
   it("as views do banco são exatamente ALLOWED_VIEWS", () => {
@@ -55,6 +63,29 @@ describe("views do LLM: existência e exposição de dados", () => {
         valor(`SELECT count(*) AS n FROM ${view} WHERE cliente_tipo_pessoa = 'PJ' AND cliente_faixa_etaria IS NOT NULL`),
         view,
       ).toBe(0);
+    }
+  });
+
+  // A idade é calculada numa data fixa (migration 0002), para as respostas não mudarem com o tempo.
+  it("nenhuma view usa a data atual ('now')", () => {
+    expect(valor("SELECT count(*) AS n FROM sqlite_master WHERE type = 'view' AND sql LIKE '%now%'")).toBe(0);
+  });
+
+  it("a faixa etária é calculada na DATA_REFERENCIA (se ela mudar, crie uma migration nova)", () => {
+    const clientes = readonlyDb
+      .prepare("SELECT id, data_nascimento FROM cliente WHERE tipo_pessoa = 'PF' AND data_nascimento IS NOT NULL")
+      .all() as { id: number; data_nascimento: string }[];
+    const esperada = new Map(clientes.map((c) => [c.id, faixaEtaria(c.data_nascimento, env.DATA_REFERENCIA)]));
+    const divergentes = (sql: string) =>
+      (readonlyDb.prepare(sql).all() as { id: number; faixa: string }[]).filter((l) => l.faixa !== esperada.get(l.id));
+
+    expect(clientes.length).toBeGreaterThan(0);
+    expect(divergentes("SELECT id, faixa_etaria AS faixa FROM vw_cliente WHERE tipo_pessoa = 'PF'")).toEqual([]);
+    for (const view of ANALITICAS_COM_CLIENTE) {
+      expect(
+        divergentes(`SELECT DISTINCT cliente_id AS id, cliente_faixa_etaria AS faixa FROM ${view} WHERE cliente_tipo_pessoa = 'PF'`),
+        view,
+      ).toEqual([]);
     }
   });
 });

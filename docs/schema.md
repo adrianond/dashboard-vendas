@@ -73,7 +73,7 @@ sem JOINs pesados.
 | `combustivel` | `FLEX`, `GASOLINA`, `DIESEL`, `HIBRIDO`, `ELETRICO` |
 | `regiao` | `NORTE`, `NORDESTE`, `CENTRO_OESTE`, `SUDESTE`, `SUL` |
 | `tipo_pessoa` | `PF` (pessoa física), `PJ` (pessoa jurídica) |
-| `faixa_etaria` | `18-29`, `30-44`, `45-59`, `60+` (só PF; idade atual) |
+| `faixa_etaria` | `18-29`, `30-44`, `45-59`, `60+` (só PF; idade em 2026-09-30, a data de referência dos dados) |
 | `uf` | sigla da UF com 2 letras (ex.: `SP`, `RJ`) |
 
 ---
@@ -108,7 +108,7 @@ sem JOINs pesados.
 | `cliente_id`, `cliente_tipo_pessoa` | Cliente comprador e tipo (`PF`/`PJ`) |
 | `cliente_razao_social` | Razão social (só PJ; NULL para PF) |
 | `cliente_cidade`, `cliente_uf` | Cidade e UF do cliente |
-| `cliente_faixa_etaria` | Faixa etária (só PF; NULL para PJ) |
+| `cliente_faixa_etaria` | Faixa etária (só PF; NULL para PJ; idade em 2026-09-30, a data de referência dos dados) |
 
 ### `vw_proposta_detalhada` — uma linha por proposta (qualquer status)
 
@@ -178,7 +178,7 @@ sem JOINs pesados.
 | `tipo_pessoa` | `PF` ou `PJ` |
 | `razao_social` | Razão social (só PJ; NULL para PF) |
 | `cidade`, `uf` | Localização do cliente |
-| `faixa_etaria` | `18-29`, `30-44`, `45-59`, `60+` (só PF; NULL para PJ) |
+| `faixa_etaria` | `18-29`, `30-44`, `45-59`, `60+` (só PF; NULL para PJ; idade em 2026-09-30, a data de referência dos dados) |
 | `data_cadastro` | Data de cadastro na rede |
 
 ### `vw_produto` — catálogo de veículos
