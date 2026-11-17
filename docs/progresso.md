@@ -2,15 +2,18 @@
 
 ## Ponto de retomada
 
-- **Última sessão:** 2026-11-17. **Passo 3.2 — Infraestrutura da API concluído**: `src/lib/api`
+- **Passo 3.3 — Rotas de indicadores e filtros concluído** (2026-11-17): 9 rotas de indicadores e
+  `/api/filtros` (fábricas em `src/lib/api/indicadores.ts`), 28 testes novos em
+  `tests/api.unit.test.ts` (70 no arquivo) e o início do `docs/api.md` (contrato da API, com
+  exemplos reais). **Próximo:** resumo do 3.3 aguardando aprovação; depois, **passo 3.4 — Runtime
+  do agente na API** (ver as pendências do 3.4 abaixo).
+- Sessão anterior (2026-11-17): **Passo 3.2 — Infraestrutura da API concluído**: `src/lib/api`
   (erros, corpo com limite, rate limit, handler, health), rota `/api/health`, cabeçalhos de
   segurança no `next.config.ts` e 42 testes em `tests/api.unit.test.ts`. Verificação do PRD feita:
   `curl` em `/api/health` com o `next dev` → 200 com os cabeçalhos de segurança; POST → 405.
   Decisões no README; PRD 7.1 corrigido (rotas sem `export const runtime`).
 - Antes do fechamento, atualização de segurança em commit próprio (`ab4488b`): `next` 16.4.6 e
   `zod` 4.6.7 (o `next@16.4.0` tinha 2 RCE críticas e encerrava o `next dev` com o aviso).
-- **Próximo:** resumo do passo 3.2 aguardando aprovação do desenvolvedor; depois, **passo 3.3 —
-  Rotas de indicadores e filtros** (e iniciar `docs/api.md`).
 - **Estado do repositório:** tudo commitado e enviado ao GitHub; nada fora do git.
 
 ## Etapa 1 — Fundação e dados (PRD-etapa-01-fundacao-e-dados.md)
@@ -50,8 +53,8 @@ violações. Fallback beta para recusas do Sonnet 5.5 mantido desligado (nenhuma
 |---|---|---|
 | 3.0 Revisão do PRD contra o código real | ✅ concluído | e3fbbe3 |
 | 3.1 Camada de indicadores | ✅ concluído | f5ad4f6 (parcial) + 6d3b575 |
-| 3.2 Infraestrutura da API | ✅ concluído | 0758835 (parcial) + `feat(api)` (este commit) |
-| 3.3 Rotas de indicadores e filtros | ⬜ | |
+| 3.2 Infraestrutura da API | ✅ concluído | 0758835 (parcial) + f3cc99b |
+| 3.3 Rotas de indicadores e filtros | ✅ concluído | `feat(api): rotas de indicadores e filtros` (este commit) |
 | 3.4 Runtime do agente na API | ⬜ | |
 | 3.5 Rotas do agente | ⬜ | |
 | 3.6 Testes ponta a ponta e de segurança | ⬜ | |
@@ -78,8 +81,7 @@ código; o próximo passo da Etapa 3 continua sendo o 3.1.
 - Resolvido (2026-11-16): faixa_etaria passou a usar a idade em 2026-09-30 (migration 0002,
   opção a do desenvolvedor). Mudar a DATA_REFERENCIA exige uma migration nova; um teste em
   tests/db.views.test.ts acusa a divergência.
-- Passo 3.3: criar `docs/api.md` (PRD 6.2 e 7.7) documentando, entre outros, a data de corte de
-  cada indicador (vendas por data_venda; propostas/funil por data_proposta; metas por ano_mes).
+- Passo 3.5: completar o `docs/api.md` com as rotas do agente (seção 3.12 do documento).
 - Exceção ao "um commit por passo": os passos 3.1 e 3.2 têm commits parciais (`wip(indicadores)` e
   `wip(api)`), feitos a pedido do desenvolvedor para pausar a sessão; o commit oficial vem no fim.
 - Resolvido (2026-11-17): `next` 16.4.0 → 16.4.6 e `zod` → 4.6.7 por vulnerabilidades críticas e

@@ -146,6 +146,7 @@ pulados no `npm test`.
 - [docs/schema.md](docs/schema.md) — views disponíveis para consultas (é o contexto do LLM)
 - [docs/tabelas-base.md](docs/tabelas-base.md) — tabelas base (só para desenvolvedores; nunca vai ao LLM)
 - [docs/drizzle.md](docs/drizzle.md) — como o Drizzle é usado no projeto
+- [docs/api.md](docs/api.md) — contrato da API (rotas, parâmetros, erros, exemplos; base da Etapa 4)
 - [docs/progresso.md](docs/progresso.md) — andamento das etapas e pendências
 
 ## Segurança
@@ -364,6 +365,13 @@ Detalhes no `CLAUDE.md`, seção 4.
   `langgraph dev`, local), `extract-zip` (só o `langgraph new`, ver item acima), `esbuild` antigo
   via `drizzle-kit` (corrigir exige trocar de major) e `typescript-eslint`/`minimatch` (ESLint).
   Ficam para uma revisão das ferramentas de desenvolvimento depois do passo 3.2.
+- **Rotas de indicadores e filtros (passo 3.3):** 9 rotas `GET /api/indicadores/<nome>` e
+  `GET /api/filtros`, montadas por fábricas em `src/lib/api/indicadores.ts` (cada `route.ts` só
+  liga o nome à função da camada). Decisões onde o PRD não define: os indicadores respondem
+  `{ filtros, dados }`, com os filtros já com os padrões aplicados, para a tela mostrar o período
+  usado (os rankings também devolvem `limite`); `/api/filtros` não aceita parâmetros (qualquer um
+  → 400, como os demais schemas estritos). O contrato está em `docs/api.md`, com exemplos reais
+  gerados chamando os handlers.
 - **Infraestrutura da API (passo 3.2):** `src/lib/api` (`errors`, `body`, `rate-limit`, `handler`,
   `health`) e a rota `/api/health`. Decisões onde o PRD não define:
   - **Runtime:** as rotas não exportam `runtime` nem `dynamic`. Com `cacheComponents: true`, o

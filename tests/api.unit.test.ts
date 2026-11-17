@@ -7,7 +7,18 @@ import { ERROS, ErroApi, respostaDeErro, type CorpoErro } from "@/lib/api/errors
 import { criarRota, lerConsulta, type EntradaLog } from "@/lib/api/handler";
 import { JanelaDeslizante, chaveDoCliente, consumirLimite, criarLimitadores } from "@/lib/api/rate-limit";
 import { verificarSaude } from "@/lib/api/health";
+import * as indicadores from "@/lib/indicadores";
 import { lerFiltros } from "@/lib/indicadores";
+import { GET as getFiltros } from "@/app/api/filtros/route";
+import { GET as getFunil } from "@/app/api/indicadores/funil/route";
+import { GET as getMetas } from "@/app/api/indicadores/metas/route";
+import { GET as getPorRegiao } from "@/app/api/indicadores/por-regiao/route";
+import { GET as getPorTipoVeiculo } from "@/app/api/indicadores/por-tipo-veiculo/route";
+import { GET as getPorUnidade } from "@/app/api/indicadores/por-unidade/route";
+import { GET as getRankingProdutos } from "@/app/api/indicadores/ranking-produtos/route";
+import { GET as getRankingVendedores } from "@/app/api/indicadores/ranking-vendedores/route";
+import { GET as getResumo } from "@/app/api/indicadores/resumo/route";
+import { GET as getSerieMensal } from "@/app/api/indicadores/serie-mensal/route";
 import { GET as getHealth } from "@/app/api/health/route";
 import nextConfig, { CABECALHOS_DE_SEGURANCA } from "../next.config";
 
@@ -319,5 +330,93 @@ describe("cabeçalhos de segurança (next.config.ts)", () => {
 
   it("não expõe o X-Powered-By", () => {
     expect(nextConfig.poweredByHeader).toBe(false);
+  });
+});
+
+describe("rotas de indicadores e filtros", () => {
+  const ROTAS: [nome: string, get: (request: Request) => Promise<Response>, calcular: (f: indicadores.Filtros) => unknown][] = [
+    ["resumo", getResumo, indicadores.resumo],
+    ["serie-mensal", getSerieMensal, indicadores.serieMensal],
+    ["por-regiao", getPorRegiao, indicadores.porRegiao],
+    ["por-unidade", getPorUnidade, indicadores.porUnidade],
+    ["por-tipo-veiculo", getPorTipoVeiculo, indicadores.porTipoVeiculo],
+    ["funil", getFunil, indicadores.funil],
+    ["metas", getMetas, indicadores.metas],
+  ];
+  const RANKINGS: [nome: string, get: (request: Request) => Promise<Response>, calcular: (f: indicadores.Filtros, limite: number) => unknown][] = [
+    ["ranking-vendedores", getRankingVendedores, indicadores.rankingVendedores],
+    ["ranking-produtos", getRankingProdutos, indicadores.rankingProdutos],
+  ];
+
+  const pedir = (get: (request: Request) => Promise<Response>, nome: string, consulta = "") =>
+    get(new Request(`http://localhost/api/indicadores/${nome}${consulta ? `?${consulta}` : ""}`));
+  const comoJson = (valor: unknown) => JSON.parse(JSON.stringify(valor));
+  const filtrosDe = (consulta: string) => {
+    const leitura = indicadores.lerFiltros(new URLSearchParams(consulta));
+    if (!leitura.ok) throw new Error("filtros de teste inválidos");
+    return leitura.filtros;
+  };
+
+  async function conferirSucesso(resposta: Response) {
+    expect(resposta.status).toBe(200);
+    expect(resposta.headers.get("cache-control")).toBe("private, max-age=60");
+    expect(resposta.headers.get("x-request-id")).toMatch(/^[0-9a-f-]{36}$/);
+    return resposta.json();
+  }
+
+  async function conferirErro(resposta: Response, trecho: string) {
+    expect(resposta.status).toBe(400);
+    expect(resposta.headers.get("cache-control")).toBe("no-store");
+    const corpo = (await resposta.json()) as CorpoErro;
+    expect(corpo.erro.codigo).toBe("ENTRADA_INVALIDA");
+    expect(corpo.erro.mensagem).toContain(trecho);
+    return corpo;
+  }
+
+  const COM_FILTROS = "inicio=2026-01-01&fim=2026-06-30&regiao=SUDESTE&tipoVeiculo=LEVE";
+
+  it.each(ROTAS)("%s: sem parâmetros, devolve os filtros padrão e os dados da camada", async (nome, get, calcular) => {
+    const corpo = await conferirSucesso(await pedir(get, nome));
+    const filtros = filtrosDe("");
+    expect(corpo).toEqual({ filtros: comoJson(filtros), dados: comoJson(calcular(filtros)) });
+  });
+
+  it.each(ROTAS)("%s: com filtros, devolve os mesmos dados da camada", async (nome, get, calcular) => {
+    const corpo = await conferirSucesso(await pedir(get, nome, COM_FILTROS));
+    expect(corpo.dados).toEqual(comoJson(calcular(filtrosDe(COM_FILTROS))));
+  });
+
+  it.each(RANKINGS)("%s: limite padrão 10 e limite informado", async (nome, get, calcular) => {
+    const padrao = await conferirSucesso(await pedir(get, nome));
+    expect(padrao.limite).toBe(10);
+    expect(padrao.dados).toEqual(comoJson(calcular(filtrosDe(""), 10)));
+    const tres = await conferirSucesso(await pedir(get, nome, `${COM_FILTROS}&limite=3`));
+    expect(tres.limite).toBe(3);
+    expect(tres.dados).toEqual(comoJson(calcular(filtrosDe(COM_FILTROS), 3)));
+  });
+
+  it.each(RANKINGS)("%s: recusa limite fora de 1 a 50", async (nome, get) => {
+    await conferirErro(await pedir(get, nome, "limite=51"), "limite");
+  });
+
+  it.each(ROTAS)("%s: recusa data inválida, parâmetro desconhecido e limite", async (nome, get) => {
+    await conferirErro(await pedir(get, nome, "inicio=2026-02-30"), "inicio");
+    await conferirErro(await pedir(get, nome, "ordem=1"), "parâmetro desconhecido: ordem");
+    await conferirErro(await pedir(get, nome, "limite=5"), "parâmetro desconhecido: limite");
+  });
+
+  it("injeção num filtro é recusada sem ecoar o valor", async () => {
+    const corpo = await conferirErro(await pedir(getResumo, "resumo", `regiao=${encodeURIComponent("SUL' OR 1=1 --")}`), "regiao");
+    expect(JSON.stringify(corpo)).not.toContain("OR 1=1");
+  });
+
+  it("/api/filtros: devolve as opções dos seletores", async () => {
+    const corpo = await conferirSucesso(await getFiltros(new Request("http://localhost/api/filtros")));
+    expect(corpo).toEqual(comoJson(indicadores.opcoesFiltros()));
+  });
+
+  it("/api/filtros: recusa qualquer parâmetro", async () => {
+    const resposta = await getFiltros(new Request("http://localhost/api/filtros?regiao=SUL"));
+    await conferirErro(resposta, "não aceita parâmetros");
   });
 });
