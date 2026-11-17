@@ -186,7 +186,7 @@ Data de corte por tipo de indicador: indicadores de **venda** usam `data_venda`;
 
 ### 7.1 Regras gerais (camada 8 de segurança)
 
-- Todas as rotas: `export const runtime = "nodejs"`. **Não** usar `export const dynamic`: com `cacheComponents: true` (Next 16) essa opção não existe e quebra o build. Toda rota executa a cada requisição porque o wrapper lê a requisição (cabeçalhos e URL), o que impede a pré-renderização; nenhuma rota usa `use cache`.
+- Todas as rotas rodam no runtime Node.js, o padrão do Next 16 (o Edge está descontinuado). **Não** exportar `runtime` nem `dynamic`: com `cacheComponents: true` (Next 16.4) essas opções de segmento são recusadas e quebram a compilação. Um teste em `api.unit.test.ts` garante que nenhuma rota as exporta nem usa `edge`. Toda rota executa a cada requisição porque o wrapper lê a requisição (cabeçalhos e URL), o que impede a pré-renderização; nenhuma rota usa `use cache`.
 - Todas passam por um wrapper comum (`lib/api/handler.ts`) que:
   - gera um `requestId` (devolvido no cabeçalho `x-request-id` e no corpo dos erros);
   - valida entrada com zod (query string para GET, corpo JSON para POST);
@@ -574,3 +574,4 @@ Execute os passos **na ordem**. Dentro de cada passo, toda ação segue o protoc
 | 2026-10-22 | 10.2 | `eval:run` exige `--confirmar` em vez de confirmação interativa | A sessão do Claude Code não é interativa |
 | 2026-10-22 | 8 | `test:llm` multiplataforma e scripts de teste com `--configLoader runner` | `VAR=1 comando` não funciona no Windows; o vitest cai com segfault sem a flag |
 | 2026-10-22 | 4 | Checkpointer SQLite com `overrides` para o `better-sqlite3` 13, condicionado ao teste de persistência do 3.4 | O pacote 1.1.0 declara `better-sqlite3 ^12`; evita duas cópias nativas e script de instalação (decisão do desenvolvedor) |
+| 2026-11-17 | 7.1 | Rotas sem `export const runtime`; o Node.js é o padrão e um teste garante que nenhuma rota exporta `runtime`/`dynamic` nem usa `edge` | Com `cacheComponents: true` (Next 16.4), o `next dev` recusa `runtime` ("not compatible with nextConfig.cacheComponents"); verificado no passo 3.2 |

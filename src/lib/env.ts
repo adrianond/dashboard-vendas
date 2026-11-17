@@ -39,6 +39,14 @@ const envSchema = z.object({
   AGENT_MAX_TOKENS_SQL: inteiro(1000),
   AGENT_MAX_TOKENS_RESPOSTA: inteiro(800),
 
+  // API (PRD da Etapa 3, seções 7.4 e 11)
+  AGENT_MODE: z.preprocess(vazioComoAusente, z.enum(["real", "fake"]).default("real")),
+  TRUST_PROXY: z.preprocess(vazioComoAusente, z.enum(["true", "false"]).default("false")),
+  RATE_LIMIT_AGENTE_MINUTO: inteiro(10),
+  RATE_LIMIT_AGENTE_DIA: inteiro(100),
+  RATE_LIMIT_INDICADORES_MINUTO: inteiro(120),
+  RATE_LIMIT_FEEDBACK_MINUTO: inteiro(30),
+
   // Testes com LLM real (têm custo)
   RUN_LLM_TESTS: z.preprocess(vazioComoAusente, z.enum(["0", "1"]).default("0")),
 });

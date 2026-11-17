@@ -2,12 +2,29 @@
 
 ## Ponto de retomada
 
-- **Última sessão:** 2026-11-17. **Passo 3.1 — Camada de indicadores concluído**: filtros e os 10
-  indicadores da seção 6.3 em `src/lib/indicadores`, com 80 testes em `tests/indicadores.test.ts`
-  (consistência com as tabelas base em 3 combinações de filtros). Decisões no README.
-- Passo 3.1 aprovado pelo desenvolvedor. Resolvida a pendência do `allowScripts` do npm (5 pacotes
-  aprovados com versão fixa no `package.json`; ver README).
-- **Próximo:** **passo 3.2 — Infraestrutura da API** (`PRD-etapa-03-api-e-qualidade.md`).
+- **Última sessão:** 2026-11-17. Passo 3.1 concluído e aprovado (`6d3b575`); `allowScripts` do npm
+  resolvido (`31eb1c9`). **Passo 3.2 — Infraestrutura da API em andamento**, pausado antes da
+  verificação com `curl` (commit parcial `wip(api)`).
+- **Passo 3.2, feito (código pronto e testado):**
+  - `src/lib/api/`: `errors.ts` (7 códigos do PRD 7.1), `body.ts` (JSON, 415, 8 KB lidos no stream),
+    `rate-limit.ts` (janela deslizante em memória; agente minuto+dia; chave fixa sem TRUST_PROXY,
+    último endereço do x-forwarded-for com proxy), `handler.ts` (`criarRota`, requestId, log JSON
+    sem corpo, ERRO_INTERNO sem vazar; `lerConsulta`), `health.ts`;
+  - rota `src/app/api/health/route.ts`; cabeçalhos de segurança e `poweredByHeader: false` no
+    `next.config.ts`; 6 variáveis novas no `env.ts`/`.env.example` (AGENT_MODE, TRUST_PROXY,
+    RATE_LIMIT_*);
+  - 42 testes em `tests/api.unit.test.ts` (inclui: nenhuma rota exporta `runtime`/`dynamic`);
+    suíte com 482 testes (+2 pulados), typecheck e lint sem erros;
+  - correção do PRD 7.1 (rotas sem `export const runtime`, que o Next 16.4 recusa com
+    `cacheComponents`), registrada no Histórico do PRD.
+- **BLOQUEIO:** o `next dev` encerra sozinho por um aviso de vulnerabilidade de segurança do
+  `next@16.4.0` (3 de 4 execuções), o que impediu o `curl`. Numa execução, os 5 cabeçalhos de
+  segurança já apareceram nas respostas (a rota dava 500 pelo `runtime`, já corrigido).
+- **Próximo:** refazer o anúncio da consulta da vulnerabilidade (`npm audit --json
+  --package-lock-only` e `npm view next@16 version --json`; foi apresentado e **não aprovado**);
+  depois, atualizar o Next (anúncio à parte, commit próprio), refazer o `curl` (200 no GET, 405 no
+  POST), registrar as decisões do 3.2 no README e fazer o commit oficial
+  `feat(api): infraestrutura comum, rate limit e cabeçalhos de segurança`.
 - **Estado do repositório:** tudo commitado e enviado ao GitHub; nada fora do git.
 
 ## Etapa 1 — Fundação e dados (PRD-etapa-01-fundacao-e-dados.md)
@@ -46,8 +63,8 @@ violações. Fallback beta para recusas do Sonnet 5.5 mantido desligado (nenhuma
 | Passo | Status | Commit |
 |---|---|---|
 | 3.0 Revisão do PRD contra o código real | ✅ concluído | e3fbbe3 |
-| 3.1 Camada de indicadores | ✅ concluído | f5ad4f6 (parcial) + `feat(indicadores)` (este commit) |
-| 3.2 Infraestrutura da API | ⬜ | |
+| 3.1 Camada de indicadores | ✅ concluído | f5ad4f6 (parcial) + 6d3b575 |
+| 3.2 Infraestrutura da API | 🔄 em andamento (código pronto; falta a verificação com curl) | parcial: commit `wip(api)` |
 | 3.3 Rotas de indicadores e filtros | ⬜ | |
 | 3.4 Runtime do agente na API | ⬜ | |
 | 3.5 Rotas do agente | ⬜ | |
@@ -77,8 +94,15 @@ código; o próximo passo da Etapa 3 continua sendo o 3.1.
   tests/db.views.test.ts acusa a divergência.
 - Passo 3.3: criar `docs/api.md` (PRD 6.2 e 7.7) documentando, entre outros, a data de corte de
   cada indicador (vendas por data_venda; propostas/funil por data_proposta; metas por ano_mes).
-- Exceção ao "um commit por passo": o passo 3.1 tem um commit parcial (`wip(indicadores)`), feito a
-  pedido do desenvolvedor para pausar a sessão; o commit oficial do passo vem no fim.
+- Exceção ao "um commit por passo": os passos 3.1 e 3.2 têm commits parciais (`wip(indicadores)` e
+  `wip(api)`), feitos a pedido do desenvolvedor para pausar a sessão; o commit oficial vem no fim.
+- Next.js 16.4.0 com vulnerabilidade de segurança conhecida (aviso do próprio `next dev`, que
+  encerra o servidor): investigar e atualizar antes de fechar o 3.2. Ao atualizar o `next`, alinhar
+  o `eslint-config-next` e rodar `npm approve-scripts --allow-scripts-pending`.
+- Passo 3.2, ao fechar: registrar no README (Decisões) as variáveis novas, o rate limit em memória
+  (instância única; chave fixa sem TRUST_PROXY; último endereço do x-forwarded-for), a CSP com
+  'unsafe-inline' até a Etapa 4 adotar nonce ('unsafe-eval' só em dev), o health no limite dos
+  indicadores e o log só com o tipo do erro interno.
 - Resolvido (2026-11-17): `allowScripts` do npm 11.16 (hoje só consultivo; o bloqueio virá numa
   versão futura). Aprovados com versão fixa better-sqlite3, esbuild (3 versões) e unrs-resolver.
   Depois de atualizar dependências: `npm approve-scripts --allow-scripts-pending`.
