@@ -364,6 +364,28 @@ Detalhes no `CLAUDE.md`, seção 4.
   `langgraph dev`, local), `extract-zip` (só o `langgraph new`, ver item acima), `esbuild` antigo
   via `drizzle-kit` (corrigir exige trocar de major) e `typescript-eslint`/`minimatch` (ESLint).
   Ficam para uma revisão das ferramentas de desenvolvimento depois do passo 3.2.
+- **Infraestrutura da API (passo 3.2):** `src/lib/api` (`errors`, `body`, `rate-limit`, `handler`,
+  `health`) e a rota `/api/health`. Decisões onde o PRD não define:
+  - **Runtime:** as rotas não exportam `runtime` nem `dynamic`. Com `cacheComponents: true`, o
+    Next 16.4 recusa o `export const runtime = "nodejs"` que o PRD 7.1 pedia (corrigido no PRD);
+    o Node.js é o padrão, e um teste reprova qualquer rota que exporte essas opções ou cite `edge`.
+  - **Variáveis novas** (`env.ts`, `.env.example`): `AGENT_MODE` (a `/api/health` informa),
+    `TRUST_PROXY` e `RATE_LIMIT_*`. As demais variáveis do agente na API entram no passo 3.4.
+  - **Rate limit:** janela deslizante em memória, por processo (vale para uma única instância).
+    Sem `TRUST_PROXY`, todas as requisições usam a mesma chave, porque o `x-forwarded-for` pode ser
+    forjado; com proxy confiável, vale o último endereço da lista (o que o proxy acrescentou). As
+    janelas de minuto e de dia do agente só consomem vaga se as duas permitirem. A `/api/health`
+    usa o limite dos indicadores.
+  - **Erros e log:** o corpo de erro segue o PRD; exceções inesperadas viram `ERRO_INTERNO` sem
+    mensagem. O log é uma linha JSON por requisição (requestId, rota, método, status, duração e
+    campos do agente), nunca com o corpo ou a resposta; de um erro interno, só o tipo vai para o log.
+  - **Corpo:** `application/json` obrigatório; o limite de 8 KB é contado na leitura do stream; as
+    mensagens citam só os campos com problema, nunca o conteúdo.
+  - **Cabeçalhos:** os do PRD em todas as rotas, mais `poweredByHeader: false` (sem
+    `X-Powered-By`). A CSP inicial usa `'unsafe-inline'` em scripts e estilos (o Next injeta código
+    inline) até a Etapa 4 adotar nonce; `'unsafe-eval'` só em desenvolvimento.
+  - **Verificação:** `curl` em `/api/health` com o `next dev`: 200 com os cabeçalhos de segurança,
+    `x-request-id` e o JSON de 4 campos; POST responde 405 com os mesmos cabeçalhos.
 - **Camada de indicadores (passo 3.1):** consultas fixas em `src/lib/indicadores`, sem LLM.
   Decisões onde o PRD não define:
   - **Isolamento:** todo módulo começa com `import "server-only"`; no vitest, um alias aponta o

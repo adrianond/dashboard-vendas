@@ -2,27 +2,15 @@
 
 ## Ponto de retomada
 
-- **Última sessão:** 2026-11-17. Passo 3.1 concluído e aprovado (`6d3b575`); `allowScripts` do npm
-  resolvido (`31eb1c9`). **Passo 3.2 — Infraestrutura da API em andamento**, pausado antes da
-  verificação com `curl` (commit parcial `wip(api)`).
-- **Passo 3.2, feito (código pronto e testado):**
-  - `src/lib/api/`: `errors.ts` (7 códigos do PRD 7.1), `body.ts` (JSON, 415, 8 KB lidos no stream),
-    `rate-limit.ts` (janela deslizante em memória; agente minuto+dia; chave fixa sem TRUST_PROXY,
-    último endereço do x-forwarded-for com proxy), `handler.ts` (`criarRota`, requestId, log JSON
-    sem corpo, ERRO_INTERNO sem vazar; `lerConsulta`), `health.ts`;
-  - rota `src/app/api/health/route.ts`; cabeçalhos de segurança e `poweredByHeader: false` no
-    `next.config.ts`; 6 variáveis novas no `env.ts`/`.env.example` (AGENT_MODE, TRUST_PROXY,
-    RATE_LIMIT_*);
-  - 42 testes em `tests/api.unit.test.ts` (inclui: nenhuma rota exporta `runtime`/`dynamic`);
-    suíte com 482 testes (+2 pulados), typecheck e lint sem erros;
-  - correção do PRD 7.1 (rotas sem `export const runtime`, que o Next 16.4 recusa com
-    `cacheComponents`), registrada no Histórico do PRD.
-- Bloqueio resolvido: o `next dev` encerrava sozinho por avisos de segurança do `next@16.4.0`.
-  Atualizados `next` 16.4.6 (2 RCE críticas, 1 DoS), `eslint-config-next` 16.4.6 e `zod` 4.6.7
-  (DoS na validação), em commit próprio `fix(deps)`. Ver README.
-- **Próximo:** refazer a verificação do 3.2 (`npm run dev` + `curl`: 200 no GET de `/api/health`
-  com os cabeçalhos de segurança, 405 no POST), registrar as decisões do 3.2 no README e fazer o
-  commit oficial `feat(api): infraestrutura comum, rate limit e cabeçalhos de segurança`.
+- **Última sessão:** 2026-11-17. **Passo 3.2 — Infraestrutura da API concluído**: `src/lib/api`
+  (erros, corpo com limite, rate limit, handler, health), rota `/api/health`, cabeçalhos de
+  segurança no `next.config.ts` e 42 testes em `tests/api.unit.test.ts`. Verificação do PRD feita:
+  `curl` em `/api/health` com o `next dev` → 200 com os cabeçalhos de segurança; POST → 405.
+  Decisões no README; PRD 7.1 corrigido (rotas sem `export const runtime`).
+- Antes do fechamento, atualização de segurança em commit próprio (`ab4488b`): `next` 16.4.6 e
+  `zod` 4.6.7 (o `next@16.4.0` tinha 2 RCE críticas e encerrava o `next dev` com o aviso).
+- **Próximo:** resumo do passo 3.2 aguardando aprovação do desenvolvedor; depois, **passo 3.3 —
+  Rotas de indicadores e filtros** (e iniciar `docs/api.md`).
 - **Estado do repositório:** tudo commitado e enviado ao GitHub; nada fora do git.
 
 ## Etapa 1 — Fundação e dados (PRD-etapa-01-fundacao-e-dados.md)
@@ -62,7 +50,7 @@ violações. Fallback beta para recusas do Sonnet 5.5 mantido desligado (nenhuma
 |---|---|---|
 | 3.0 Revisão do PRD contra o código real | ✅ concluído | e3fbbe3 |
 | 3.1 Camada de indicadores | ✅ concluído | f5ad4f6 (parcial) + 6d3b575 |
-| 3.2 Infraestrutura da API | 🔄 em andamento (código pronto; falta a verificação com curl) | parcial: commit `wip(api)` |
+| 3.2 Infraestrutura da API | ✅ concluído | 0758835 (parcial) + `feat(api)` (este commit) |
 | 3.3 Rotas de indicadores e filtros | ⬜ | |
 | 3.4 Runtime do agente na API | ⬜ | |
 | 3.5 Rotas do agente | ⬜ | |
@@ -98,10 +86,6 @@ código; o próximo passo da Etapa 3 continua sendo o 3.1.
   altas. Pendente, depois do 3.2: revisar os 17 avisos restantes do `npm audit`, todos de
   ferramentas de desenvolvimento (hono do `langgraph dev`, extract-zip, esbuild via drizzle-kit,
   typescript-eslint/minimatch).
-- Passo 3.2, ao fechar: registrar no README (Decisões) as variáveis novas, o rate limit em memória
-  (instância única; chave fixa sem TRUST_PROXY; último endereço do x-forwarded-for), a CSP com
-  'unsafe-inline' até a Etapa 4 adotar nonce ('unsafe-eval' só em dev), o health no limite dos
-  indicadores e o log só com o tipo do erro interno.
 - Resolvido (2026-11-17): `allowScripts` do npm 11.16 (hoje só consultivo; o bloqueio virá numa
   versão futura). Aprovados com versão fixa better-sqlite3, esbuild (3 versões) e unrs-resolver.
   Depois de atualizar dependências: `npm approve-scripts --allow-scripts-pending`.
