@@ -56,54 +56,86 @@ const umDe = (valores: readonly string[]) => `use um destes valores: ${valores.j
 
 const unidadeExiste = (id: number) => readonlyDb.prepare("SELECT 1 FROM vw_unidade WHERE id = ?").get(id) !== undefined;
 
-export const esquemaFiltros = z
-  .strictObject({
-    inicio: opcional(data),
-    fim: opcional(data),
-    unidadeId: opcional(
-      z
-        .string()
-        .regex(/^[1-9]\d{0,9}$/, "use o id numérico de uma unidade")
-        .transform(Number),
-    ),
-    regiao: opcional(z.enum(REGIOES, { error: umDe(REGIOES) })),
-    tipoVeiculo: opcional(z.enum(TIPOS_VEICULO, { error: umDe(TIPOS_VEICULO) })),
-    categoria: opcional(z.enum(CATEGORIAS, { error: umDe(CATEGORIAS) })),
-  })
-  .transform((entrada, ctx) => {
-    const fim = entrada.fim ?? env.DATA_REFERENCIA;
-    const inicio = entrada.inicio ?? inicioPadrao(fim);
-    const problema = (path: string, message: string) => ctx.addIssue({ code: "custom", path: [path], message });
+const camposFiltros = {
+  inicio: opcional(data),
+  fim: opcional(data),
+  unidadeId: opcional(
+    z
+      .string()
+      .regex(/^[1-9]\d{0,9}$/, "use o id numérico de uma unidade")
+      .transform(Number),
+  ),
+  regiao: opcional(z.enum(REGIOES, { error: umDe(REGIOES) })),
+  tipoVeiculo: opcional(z.enum(TIPOS_VEICULO, { error: umDe(TIPOS_VEICULO) })),
+  categoria: opcional(z.enum(CATEGORIAS, { error: umDe(CATEGORIAS) })),
+};
 
-    if (fim < inicio) problema("fim", "a data final deve ser igual ou posterior à inicial");
-    else if (fim >= somarMeses(inicio, MAX_MESES)) problema("fim", `o período pode ter no máximo ${MAX_MESES} meses`);
-    if (entrada.unidadeId !== undefined && !unidadeExiste(entrada.unidadeId)) problema("unidadeId", "unidade não encontrada");
-    if (entrada.tipoVeiculo && entrada.categoria) {
-      const categorias: readonly string[] = CATEGORIAS_POR_TIPO[entrada.tipoVeiculo];
-      if (!categorias.includes(entrada.categoria)) {
-        problema("categoria", `categoria incompatível com o tipo ${entrada.tipoVeiculo}: ${umDe(categorias)}`);
-      }
+type EntradaFiltros = z.output<z.ZodObject<typeof camposFiltros>>;
+
+// Padrões do período e regras que envolvem mais de um campo (ou o banco).
+function completarFiltros(entrada: EntradaFiltros, ctx: z.core.$RefinementCtx) {
+  const fim = entrada.fim ?? env.DATA_REFERENCIA;
+  const inicio = entrada.inicio ?? inicioPadrao(fim);
+  const problema = (path: string, message: string) => ctx.addIssue({ code: "custom", path: [path], message });
+
+  if (fim < inicio) problema("fim", "a data final deve ser igual ou posterior à inicial");
+  else if (fim >= somarMeses(inicio, MAX_MESES)) problema("fim", `o período pode ter no máximo ${MAX_MESES} meses`);
+  if (entrada.unidadeId !== undefined && !unidadeExiste(entrada.unidadeId)) problema("unidadeId", "unidade não encontrada");
+  if (entrada.tipoVeiculo && entrada.categoria) {
+    const categorias: readonly string[] = CATEGORIAS_POR_TIPO[entrada.tipoVeiculo];
+    if (!categorias.includes(entrada.categoria)) {
+      problema("categoria", `categoria incompatível com o tipo ${entrada.tipoVeiculo}: ${umDe(categorias)}`);
     }
-    return { ...entrada, inicio, fim };
-  });
+  }
+  return { ...entrada, inicio, fim };
+}
+
+export const esquemaFiltros = z.strictObject(camposFiltros).transform(completarFiltros);
 
 export type Filtros = z.output<typeof esquemaFiltros>;
 
+// Rankings: os mesmos filtros mais o tamanho da lista (PRD 6.3: padrão 10, máximo 50). Nos demais
+// indicadores, `limite` continua sendo parâmetro desconhecido.
+export const LIMITE_PADRAO = 10;
+export const LIMITE_MAXIMO = 50;
+
+export const esquemaRanking = z
+  .strictObject({
+    ...camposFiltros,
+    limite: opcional(
+      z
+        .string()
+        .regex(/^[1-9]\d?$/, `use um número inteiro de 1 a ${LIMITE_MAXIMO}`)
+        .transform(Number)
+        .refine((limite) => limite <= LIMITE_MAXIMO, `use um número inteiro de 1 a ${LIMITE_MAXIMO}`),
+    ),
+  })
+  .transform(({ limite, ...entrada }, ctx) => ({ filtros: completarFiltros(entrada, ctx), limite: limite ?? LIMITE_PADRAO }));
+
 export type LeituraFiltros = { ok: true; filtros: Filtros } | { ok: false; mensagens: string[] };
+export type LeituraRanking = { ok: true; filtros: Filtros; limite: number } | { ok: false; mensagens: string[] };
+
+type Entrada = URLSearchParams | Record<string, string | undefined>;
+
+const paraObjeto = (entrada: Entrada) => (entrada instanceof URLSearchParams ? Object.fromEntries(entrada) : entrada);
 
 // Mensagens em português, sem ecoar o valor recebido; a API (passo 3.2) as transforma em ENTRADA_INVALIDA.
-export function lerFiltros(entrada: URLSearchParams | Record<string, string | undefined>): LeituraFiltros {
-  const objeto = entrada instanceof URLSearchParams ? Object.fromEntries(entrada) : entrada;
-  const resultado = esquemaFiltros.safeParse(objeto);
-  if (resultado.success) return { ok: true, filtros: resultado.data };
-  return {
-    ok: false,
-    mensagens: resultado.error.issues.map((problema) =>
-      problema.code === "unrecognized_keys"
-        ? `parâmetro desconhecido: ${problema.keys.join(", ")}`
-        : `${problema.path.join(".")}: ${problema.message}`,
-    ),
-  };
+function mensagensDoErro(erro: z.ZodError): string[] {
+  return erro.issues.map((problema) =>
+    problema.code === "unrecognized_keys"
+      ? `parâmetro desconhecido: ${problema.keys.join(", ")}`
+      : `${problema.path.join(".")}: ${problema.message}`,
+  );
+}
+
+export function lerFiltros(entrada: Entrada): LeituraFiltros {
+  const resultado = esquemaFiltros.safeParse(paraObjeto(entrada));
+  return resultado.success ? { ok: true, filtros: resultado.data } : { ok: false, mensagens: mensagensDoErro(resultado.error) };
+}
+
+export function lerFiltrosRanking(entrada: Entrada): LeituraRanking {
+  const resultado = esquemaRanking.safeParse(paraObjeto(entrada));
+  return resultado.success ? { ok: true, ...resultado.data } : { ok: false, mensagens: mensagensDoErro(resultado.error) };
 }
 
 // --- WHERE parametrizado ---

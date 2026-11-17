@@ -345,3 +345,32 @@ Detalhes no `CLAUDE.md`, seção 4.
   com `--import tsx`. No build do Next.js esse arquivo não fica no bundle, e o `tsx` é dependência
   de desenvolvimento: será preciso empacotar/compilar o worker (ou outra estratégia de processo)
   e conferir o caminho do arquivo em produção.
+- **Camada de indicadores (passo 3.1):** consultas fixas em `src/lib/indicadores`, sem LLM.
+  Decisões onde o PRD não define:
+  - **Isolamento:** todo módulo começa com `import "server-only"`; no vitest, um alias aponta o
+    pacote para o próprio `empty.js` (caminho de arquivo, porque o `exports` do pacote não expõe o
+    subcaminho). A regra do ESLint que restringe o agente à conexão somente leitura vale também
+    para `src/lib/indicadores/**`.
+  - **Filtros (`filtros.ts`):** zod com `.strict()` (parâmetro desconhecido é recusado); `limite`
+    existe só nos rankings (1 a 50, padrão 10). O início padrão é o 1º dia dos 12 meses completos
+    que terminam no mês do fim (2025-10-01 para a `DATA_REFERENCIA`; o PRD diz só "12 meses
+    antes"); máximo de 36 meses; a unidade é conferida em `vw_unidade`. As mensagens de erro não
+    repetem o valor recebido. O SQL só tem placeholders nomeados, e os nomes de coluna vêm do código.
+  - **Data de corte:** vendas por `data_venda`; propostas, funil e conversão por `data_proposta`;
+    metas por `ano_mes`. Definições iguais às do `docs/schema.md` e do `db:check`.
+  - **Resumo:** a variação é relativa, em %, para todos os números, inclusive conversão e desconto
+    (não em pontos percentuais). O período anterior tem o mesmo número de dias e termina na
+    véspera do início. Desconto médio = média do desconto percentual das vendas.
+  - **Metas** (`metas` e o atingimento em `por-unidade`): usam a unidade **atual** do vendedor, como
+    a `vw_desempenho_vendedor_mes`, e ignoram tipo e categoria (metas não são por produto).
+    Atingimento médio em quantidade e em valor. "Mês mais recente" = último mês do período com metas.
+  - **Rankings:** no de vendedores, a unidade exibida é a atual do vendedor, e os filtros de
+    unidade/região valem para a unidade da venda; desconto médio das vendas; desempates
+    determinísticos. No de produtos, o mesmo `limite` corta as duas listas.
+  - **Listas:** `por-unidade` traz as unidades sem venda (com zero); `por-regiao` e
+    `por-tipo-veiculo` só o que teve venda; as regiões dos filtros são as que têm unidade. Campos em
+    camelCase, como o resto do código TypeScript.
+  - **Teste de consistência:** `tests/indicadores.test.ts` recalcula cada indicador com SQL
+    independente sobre as tabelas base, em 3 combinações (padrão, todos os filtros, período sem
+    dados), com tolerância de uma unidade de arredondamento (somas em ordens diferentes podem
+    divergir na última casa).
