@@ -345,6 +345,15 @@ Detalhes no `CLAUDE.md`, seção 4.
   com `--import tsx`. No build do Next.js esse arquivo não fica no bundle, e o `tsx` é dependência
   de desenvolvimento: será preciso empacotar/compilar o worker (ou outra estratégia de processo)
   e conferir o caminho do arquivo em produção.
+- **Scripts de instalação (`allowScripts`, npm 11.16):** o npm passou a registrar quais
+  dependências podem rodar scripts de instalação. Hoje o campo é só consultivo (os scripts rodam
+  e o npm avisa), mas uma versão futura vai bloquear os não revisados, e um clone novo ficaria sem
+  o `better-sqlite3` compilado. Aprovados, com versão fixa: `better-sqlite3@13.0.3`
+  (`node-gyp rebuild`, módulo nativo), `esbuild@0.18.20`, `esbuild@0.25.12` e `esbuild@0.28.2`
+  (binário da plataforma; via `drizzle-kit`, `tsx`, `vite` e `langgraph-cli`) e
+  `unrs-resolver@1.12.2` (binário; via `eslint-config-next`). A versão fixa mantém a revisão a
+  cada atualização: depois de um `npm update`, rode `npm approve-scripts --allow-scripts-pending`
+  para ver o que mudou e, depois de revisar, `npm approve-scripts <pacote>`.
 - **Camada de indicadores (passo 3.1):** consultas fixas em `src/lib/indicadores`, sem LLM.
   Decisões onde o PRD não define:
   - **Isolamento:** todo módulo começa com `import "server-only"`; no vitest, um alias aponta o

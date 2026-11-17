@@ -5,8 +5,9 @@
 - **Última sessão:** 2026-11-17. **Passo 3.1 — Camada de indicadores concluído**: filtros e os 10
   indicadores da seção 6.3 em `src/lib/indicadores`, com 80 testes em `tests/indicadores.test.ts`
   (consistência com as tabelas base em 3 combinações de filtros). Decisões no README.
-- **Próximo:** resumo do passo 3.1 aguardando aprovação do desenvolvedor; depois, investigar a
-  pendência do `allow-scripts` do npm (se aprovado) e o **passo 3.2 — Infraestrutura da API**.
+- Passo 3.1 aprovado pelo desenvolvedor. Resolvida a pendência do `allowScripts` do npm (5 pacotes
+  aprovados com versão fixa no `package.json`; ver README).
+- **Próximo:** **passo 3.2 — Infraestrutura da API** (`PRD-etapa-03-api-e-qualidade.md`).
 - **Estado do repositório:** tudo commitado e enviado ao GitHub; nada fora do git.
 
 ## Etapa 1 — Fundação e dados (PRD-etapa-01-fundacao-e-dados.md)
@@ -78,9 +79,9 @@ código; o próximo passo da Etapa 3 continua sendo o 3.1.
   cada indicador (vendas por data_venda; propostas/funil por data_proposta; metas por ano_mes).
 - Exceção ao "um commit por passo": o passo 3.1 tem um commit parcial (`wip(indicadores)`), feito a
   pedido do desenvolvedor para pausar a sessão; o commit oficial do passo vem no fim.
-- npm 11.16 bloqueia scripts de instalação não aprovados (`allow-scripts`): num clone novo, o
-  `better-sqlite3` (nativo) pode não compilar no `npm install`. Investigar e anunciar a solução
-  (ex.: `npm approve-scripts better-sqlite3 esbuild unrs-resolver`, ou documentar) depois do 3.1.
+- Resolvido (2026-11-17): `allowScripts` do npm 11.16 (hoje só consultivo; o bloqueio virá numa
+  versão futura). Aprovados com versão fixa better-sqlite3, esbuild (3 versões) e unrs-resolver.
+  Depois de atualizar dependências: `npm approve-scripts --allow-scripts-pending`.
 - Passo 3.4: empacotar o processo filho do executor no Next.js (fork de um .ts com --import tsx;
   ver o ponto de atenção no README e a seção 7.6 do PRD).
 - Passo 3.4: instalar @langchain/langgraph-checkpoint-sqlite com overrides para o better-sqlite3 13
