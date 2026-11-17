@@ -354,6 +354,16 @@ Detalhes no `CLAUDE.md`, seção 4.
   `unrs-resolver@1.12.2` (binário; via `eslint-config-next`). A versão fixa mantém a revisão a
   cada atualização: depois de um `npm update`, rode `npm approve-scripts --allow-scripts-pending`
   para ver o que mudou e, depois de revisar, `npm approve-scripts <pacote>`.
+- **Atualização de segurança (2026-11-17):** `next` 16.4.0 → 16.4.6 (2 avisos críticos de execução
+  remota de código sem autenticação, 1 alto de negação de serviço e 1 moderado de vazamento com
+  `use cache`), com o `eslint-config-next` alinhado, e `zod` → 4.6.7 (aviso alto de esgotamento de
+  memória ao validar coleções grandes; o zod valida a entrada da API). O próprio `next dev` passou
+  a encerrar o servidor exibindo o aviso. `next` e `eslint-config-next` continuam com versão exata.
+  Avisos restantes do `npm audit` (17: 14 moderados e 3 altos) são só de ferramentas de
+  desenvolvimento, fora do build da aplicação: `hono`/`@hono/node-server` (servidor do
+  `langgraph dev`, local), `extract-zip` (só o `langgraph new`, ver item acima), `esbuild` antigo
+  via `drizzle-kit` (corrigir exige trocar de major) e `typescript-eslint`/`minimatch` (ESLint).
+  Ficam para uma revisão das ferramentas de desenvolvimento depois do passo 3.2.
 - **Camada de indicadores (passo 3.1):** consultas fixas em `src/lib/indicadores`, sem LLM.
   Decisões onde o PRD não define:
   - **Isolamento:** todo módulo começa com `import "server-only"`; no vitest, um alias aponta o

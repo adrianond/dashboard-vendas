@@ -17,14 +17,12 @@
     suíte com 482 testes (+2 pulados), typecheck e lint sem erros;
   - correção do PRD 7.1 (rotas sem `export const runtime`, que o Next 16.4 recusa com
     `cacheComponents`), registrada no Histórico do PRD.
-- **BLOQUEIO:** o `next dev` encerra sozinho por um aviso de vulnerabilidade de segurança do
-  `next@16.4.0` (3 de 4 execuções), o que impediu o `curl`. Numa execução, os 5 cabeçalhos de
-  segurança já apareceram nas respostas (a rota dava 500 pelo `runtime`, já corrigido).
-- **Próximo:** refazer o anúncio da consulta da vulnerabilidade (`npm audit --json
-  --package-lock-only` e `npm view next@16 version --json`; foi apresentado e **não aprovado**);
-  depois, atualizar o Next (anúncio à parte, commit próprio), refazer o `curl` (200 no GET, 405 no
-  POST), registrar as decisões do 3.2 no README e fazer o commit oficial
-  `feat(api): infraestrutura comum, rate limit e cabeçalhos de segurança`.
+- Bloqueio resolvido: o `next dev` encerrava sozinho por avisos de segurança do `next@16.4.0`.
+  Atualizados `next` 16.4.6 (2 RCE críticas, 1 DoS), `eslint-config-next` 16.4.6 e `zod` 4.6.7
+  (DoS na validação), em commit próprio `fix(deps)`. Ver README.
+- **Próximo:** refazer a verificação do 3.2 (`npm run dev` + `curl`: 200 no GET de `/api/health`
+  com os cabeçalhos de segurança, 405 no POST), registrar as decisões do 3.2 no README e fazer o
+  commit oficial `feat(api): infraestrutura comum, rate limit e cabeçalhos de segurança`.
 - **Estado do repositório:** tudo commitado e enviado ao GitHub; nada fora do git.
 
 ## Etapa 1 — Fundação e dados (PRD-etapa-01-fundacao-e-dados.md)
@@ -96,9 +94,10 @@ código; o próximo passo da Etapa 3 continua sendo o 3.1.
   cada indicador (vendas por data_venda; propostas/funil por data_proposta; metas por ano_mes).
 - Exceção ao "um commit por passo": os passos 3.1 e 3.2 têm commits parciais (`wip(indicadores)` e
   `wip(api)`), feitos a pedido do desenvolvedor para pausar a sessão; o commit oficial vem no fim.
-- Next.js 16.4.0 com vulnerabilidade de segurança conhecida (aviso do próprio `next dev`, que
-  encerra o servidor): investigar e atualizar antes de fechar o 3.2. Ao atualizar o `next`, alinhar
-  o `eslint-config-next` e rodar `npm approve-scripts --allow-scripts-pending`.
+- Resolvido (2026-11-17): `next` 16.4.0 → 16.4.6 e `zod` → 4.6.7 por vulnerabilidades críticas e
+  altas. Pendente, depois do 3.2: revisar os 17 avisos restantes do `npm audit`, todos de
+  ferramentas de desenvolvimento (hono do `langgraph dev`, extract-zip, esbuild via drizzle-kit,
+  typescript-eslint/minimatch).
 - Passo 3.2, ao fechar: registrar no README (Decisões) as variáveis novas, o rate limit em memória
   (instância única; chave fixa sem TRUST_PROXY; último endereço do x-forwarded-for), a CSP com
   'unsafe-inline' até a Etapa 4 adotar nonce ('unsafe-eval' só em dev), o health no limite dos
